@@ -361,9 +361,13 @@
       color: var(--accentdk); margin-bottom: .75rem;
     }
     .s-label::before {
-      content: ''; width: 24px; height: 2px;
+      content: ''; flex-shrink: 0;
+      width: 24px; height: 2px;
       background: var(--accent); border-radius: 1px;
     }
+    /* sobre fondos oscuros */
+    .contact .s-label,
+    .stats  .s-label { color: rgba(235,180,120,.85); }
     .s-title {
       font-family: var(--round); font-size: clamp(2.2rem,5vw,4rem);
       font-weight: 800; line-height: 1.08;
@@ -690,36 +694,85 @@
 
     /* ─── RESPONSIVE ─────────────────────────────── */
     @media (max-width: 1100px) {
-      .hero-inner { grid-template-columns: 1fr; }
-      .hero-right { flex-direction: row; flex-wrap: wrap; }
-      .hero-stat-card { flex: 1; border-radius: 0; }
-      .hero-stat-card:first-child { border-radius: 10px 0 0 10px; }
-      .hero-stat-card:last-child  { border-radius: 0 10px 10px 0; }
-      .intro { grid-template-columns: 1fr; }
+      .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
+      /* Stats en fila horizontal debajo del contenido hero */
+      .hero-right {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        width: 100%; max-width: 480px;
+      }
+      .hero-stat-card {
+        border-radius: 0;
+        border-top: 1px solid rgba(255,255,255,.07);
+        border-right: 1px solid rgba(255,255,255,.07);
+      }
+      .hero-stat-card:first-child { border-radius: 10px 0 0 10px; border-left: none; }
+      .hero-stat-card:last-child  { border-radius: 0 10px 10px 0; border-right: none; }
+      .intro { grid-template-columns: 1fr; gap: 1.5rem; }
       .about { grid-template-columns: 1fr; }
       .about-visual { order: -1; }
       .about-main { aspect-ratio: 16/9; }
       .about-accent { display: none; }
-      .about-badge { right: 1rem; }
+      .about-badge { right: 1rem; top: 1rem; }
       .process-grid { grid-template-columns: 1fr 1fr; }
       .contact { grid-template-columns: 1fr; }
     }
+
     @media (max-width: 768px) {
       body { cursor: auto; }
       #cur, #cur-ring { display: none; }
       .nav-links, .nav-cta { display: none; }
       .nav-burger { display: flex; }
+
+      /* Hero: centrar contenido en móvil */
+      .hero {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+        align-items: center;
+      }
+      .hero-left {
+        align-items: center;
+        text-align: center;
+        gap: 1.25rem;
+      }
+      .hero-logo-img { width: min(82vw, 340px); }
+      .hero-logo-sub { letter-spacing: .18em; }
+      .hero-tagline { display: flex; flex-direction: column; align-items: center; }
+      .hero-tagline-bar { margin-top: .5rem; }
+      .hero-desc { max-width: 100%; }
+      .hero-acts { justify-content: center; flex-wrap: wrap; }
+      .hero-scroll { left: 50%; transform: translateX(-50%); }
+
+      /* Hero right: 3 columnas compactas */
+      .hero-right { max-width: 100%; }
+      .hero-stat-card { padding: 1rem 1.25rem; }
+      .hero-stat-n { font-size: 2rem; }
+
+      /* Gallery */
       .gallery-grid { columns: 2; }
+
+      /* Stats */
       .stats { grid-template-columns: 1fr; }
       .stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,.06); }
       .stat:last-child { border-bottom: none; }
+
+      /* Process */
       .process-grid { grid-template-columns: 1fr; }
+
+      /* Footer */
       .footer { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
     }
+
     @media (max-width: 480px) {
+      .hero-left { gap: .875rem; }
+      .hero-logo-img { width: min(88vw, 280px); }
+      .hero-right { display: none; }   /* esconder stats en pantallas muy pequeñas */
       .gallery-grid { columns: 1; }
       .form-row2 { grid-template-columns: 1fr; }
-      .hero-right { display: none; }
+      .about-badge { display: none; }  /* evita overflow en teléfonos pequeños */
+      .nav-logo-img { height: 30px; }
+      .btn { padding: .75rem 1.5rem; font-size: .68rem; }
     }
   </style>
 </head>
@@ -968,9 +1021,7 @@
 <!-- ═══════════════ CONTACT ═══════════════ -->
 <section class="contact" id="contacto">
   <div class="contact-info">
-    <span class="s-label" style="color:rgba(235,180,120,.8)">
-      <span style="background:var(--accent)"></span>contacto
-    </span>
+    <span class="s-label rev" style="color:rgba(235,180,120,.8)">contacto</span>
     <h2 class="s-title s-title-light rev">
       hagamos algo<br><em>juntos</em>
     </h2>
