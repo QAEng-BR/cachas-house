@@ -116,26 +116,16 @@
       color: var(--text);
     }
     .nav-logo-link {
-      display: flex; align-items: center; gap: .6rem;
+      display: flex; align-items: center;
       z-index: 1001;
     }
-    /* Nav logo (small) */
-    .nav-logo-icon { display: block; }
-    .nav-logo-name {
-      display: flex; flex-direction: column;
-      line-height: 1;
+    .nav-logo-img {
+      height: 38px; width: auto;
+      transition: opacity .3s;
     }
-    .nav-logo-cachas {
-      font-family: var(--round); font-weight: 800;
-      font-size: 1.1rem; letter-spacing: -.01em;
-      color: inherit;
-    }
-    .nav-logo-house {
-      font-family: var(--round); font-weight: 800;
-      font-size: .8rem; letter-spacing: .05em;
-      color: var(--accent); line-height: 1.2;
-    }
-    .nav.on .nav-logo-cachas { color: var(--dark); }
+    .nav-logo-dark { display: none; }
+    .nav.on .nav-logo-light { display: none; }
+    .nav.on .nav-logo-dark  { display: block; }
 
     .nav-links {
       display: flex; align-items: center;
@@ -226,29 +216,19 @@
 
     /* Big hero logo */
     .hero-logo {
-      display: inline-flex; flex-direction: column;
-      gap: 0; opacity: 0;
+      opacity: 0;
       animation: fadeup .9s var(--easeout) .4s forwards;
     }
-    .hero-logo-row {
-      display: flex; align-items: center; gap: 0;
-      line-height: 1;
-    }
-    .hero-logo-text {
-      font-family: var(--round); font-weight: 900;
-      font-size: clamp(3.5rem,8vw,7.5rem);
-      color: var(--cream); letter-spacing: -.02em;
-    }
-    .hero-logo-icon {
-      /* amber house icon - sized to match the h letterform */
-      flex-shrink: 0;
+    .hero-logo-img {
+      width: clamp(260px, 48vw, 560px);
+      height: auto; display: block;
+      filter: drop-shadow(0 4px 24px rgba(0,0,0,.25));
     }
     .hero-logo-sub {
-      font-family: var(--sans); font-size: clamp(.75rem,1.2vw,1rem);
+      font-family: var(--sans); font-size: clamp(.7rem,1.1vw,.9rem);
       font-weight: 300; letter-spacing: .35em;
       text-transform: uppercase;
-      color: rgba(235,231,223,.4); margin-top: .5rem;
-      padding-left: .25rem;
+      color: rgba(235,231,223,.35); margin-top: .875rem;
     }
 
     .hero-tagline {
@@ -762,15 +742,8 @@
 <!-- NAV -->
 <nav class="nav" id="nav">
   <a href="#inicio" class="nav-logo-link">
-    <!-- Amber house icon (simplified from brand logo) -->
-    <svg class="nav-logo-icon" width="22" height="28" viewBox="0 0 22 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M2 13L11 3L20 13" stroke="#EBB478" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      <line x1="11" y1="3" x2="11" y2="28" stroke="#EBB478" stroke-width="2.2" stroke-linecap="round"/>
-    </svg>
-    <div class="nav-logo-name">
-      <span class="nav-logo-cachas">cachas</span>
-      <span class="nav-logo-house">house</span>
-    </div>
+    <img src="images/logo/logo-light.png" class="nav-logo-img nav-logo-light" alt="cachas house">
+    <img src="images/logo/logo.png"       class="nav-logo-img nav-logo-dark"  alt="cachas house">
   </a>
 
   <ul class="nav-links">
@@ -798,26 +771,9 @@
   <div class="hero-inner">
     <div class="hero-left">
 
-      <!-- Big logo recreation -->
+      <!-- Logo oficial extraído del brand guide -->
       <div class="hero-logo">
-        <!-- Row 1: "cac" + house-h icon + "as" -->
-        <div class="hero-logo-row">
-          <span class="hero-logo-text">cac</span>
-          <!-- House icon integrated as the "h" letterform -->
-          <svg class="hero-logo-icon" viewBox="0 0 72 110"
-               style="height:clamp(3.5rem,8vw,7.5rem); width:auto; margin: 0 -0.04em;"
-               fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Roof chevron -->
-            <path d="M6 50 L36 10 L66 50" stroke="#EBB478" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- Vertical chimney / h stem -->
-            <line x1="36" y1="10" x2="36" y2="110" stroke="#EBB478" stroke-width="7" stroke-linecap="round"/>
-          </svg>
-          <span class="hero-logo-text">as</span>
-        </div>
-        <!-- Row 2: "house" aligned under the vertical bar -->
-        <div class="hero-logo-row" style="padding-left: clamp(2rem,4.5vw,4.3rem)">
-          <span class="hero-logo-text">ouse</span>
-        </div>
+        <img src="images/logo/logo-light.png" class="hero-logo-img" alt="cachas house">
         <div class="hero-logo-sub">artesanía en madera</div>
       </div>
 
