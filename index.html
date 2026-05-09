@@ -10,6 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
 
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
   <style>
     /* ─── TOKENS ─────────────────────────────────── */
     :root {
@@ -679,6 +682,213 @@
     .lb-box { max-width: 72vw; max-height: 82vh; border-radius: 12px; overflow: hidden; }
     .lb-img { max-width: 100%; max-height: 82vh; object-fit: contain; }
 
+    /* ─── PROJECT TRACKING ──────────────────────────── */
+    .tracking {
+      padding: clamp(3.5rem,7vw,7rem) clamp(1.5rem,5vw,4rem);
+      background: var(--surf);
+      border-top: 1px solid var(--bordersub);
+    }
+    .trk-head { text-align: center; margin-bottom: 2.5rem; }
+    .trk-search {
+      max-width: 480px; margin: 2rem auto 0;
+      display: flex; gap: .75rem;
+    }
+    .trk-input {
+      flex: 1; background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 100px; padding: .8rem 1.5rem;
+      font-family: var(--sans); font-size: .95rem;
+      color: var(--text); outline: none;
+      transition: border-color .25s;
+      text-transform: uppercase; letter-spacing: .1em;
+    }
+    .trk-input::placeholder { text-transform: none; letter-spacing: 0; color: var(--faint); }
+    .trk-input:focus { border-color: var(--accent); }
+    .trk-btn-search {
+      padding: .8rem 1.75rem; border-radius: 100px;
+      background: var(--accent); color: var(--dark);
+      font-family: var(--sans); font-size: .72rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      transition: background .25s, color .25s;
+      cursor: pointer; border: none; white-space: nowrap;
+    }
+    .trk-btn-search:hover { background: var(--accentdk); color: var(--cream); }
+    .trk-error {
+      max-width: 480px; margin: 1.25rem auto 0;
+      text-align: center; font-size: .82rem;
+      color: #c0392b; display: none;
+    }
+    .trk-error.visible { display: block; }
+    .trk-card {
+      max-width: 700px; margin: 2.5rem auto 0;
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 2.25rem; display: none;
+    }
+    .trk-card.visible { display: block; }
+    .trk-card-name {
+      font-family: var(--round); font-size: 1.3rem; font-weight: 800;
+      color: var(--dark); margin-bottom: .3rem;
+    }
+    .trk-card-client {
+      font-size: .78rem; color: var(--muted);
+      letter-spacing: .04em; margin-bottom: 2.25rem;
+    }
+    .trk-card-client span { color: var(--text); font-weight: 600; }
+    .trk-steps {
+      position: relative; display: flex;
+      justify-content: space-between; align-items: flex-start;
+    }
+    .trk-steps::before {
+      content: ''; position: absolute;
+      top: 14px; left: 14px; right: 14px;
+      height: 2px; background: var(--surf2); z-index: 0;
+    }
+    .trk-progress-line {
+      position: absolute; top: 14px; left: 14px;
+      height: 2px; background: var(--accent); z-index: 1;
+      transition: width .7s cubic-bezier(.4,0,.2,1);
+    }
+    .trk-step {
+      display: flex; flex-direction: column;
+      align-items: center; gap: .55rem;
+      position: relative; z-index: 2; flex: 1;
+    }
+    .trk-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--surf2); border: 2.5px solid var(--surf2);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .4s, border-color .4s, box-shadow .4s; flex-shrink: 0;
+    }
+    .trk-dot svg { width: 12px; height: 12px; stroke: white; fill: none; display: none; }
+    .trk-step.done .trk-dot { background: var(--accent); border-color: var(--accent); }
+    .trk-step.done .trk-dot svg { display: block; }
+    .trk-step.active .trk-dot {
+      background: var(--accent); border-color: var(--accent);
+      box-shadow: 0 0 0 6px rgba(235,180,120,.22);
+    }
+    .trk-step.active .trk-dot svg { display: block; }
+    .trk-step-label {
+      font-family: var(--sans); font-size: .55rem;
+      letter-spacing: .03em; text-align: center;
+      color: var(--faint); line-height: 1.3; max-width: 72px;
+    }
+    .trk-step.done .trk-step-label { color: var(--muted); }
+    .trk-step.active .trk-step-label { color: var(--accentdk); font-weight: 700; font-size: .6rem; }
+    .trk-current-label {
+      text-align: center; margin-top: 1.5rem;
+      font-family: var(--sans); font-size: .72rem;
+      letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    }
+    .trk-current-label strong { color: var(--accentdk); font-weight: 700; }
+    .trk-updated { text-align: right; font-size: .62rem; color: var(--faint); margin-top: 1.25rem; }
+    .trk-admin-toggle {
+      display: block; margin: 2.5rem auto 0;
+      font-family: var(--sans); font-size: .62rem;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--faint); background: none; border: none;
+      cursor: pointer; transition: color .2s;
+    }
+    .trk-admin-toggle:hover { color: var(--muted); }
+    .trk-admin-panel { max-width: 920px; margin: 2rem auto 0; display: none; }
+    .trk-admin-panel.visible { display: block; }
+    .trk-admin-login {
+      max-width: 340px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 1rem; align-items: stretch;
+    }
+    .trk-admin-login h3 {
+      font-family: var(--round); font-weight: 800;
+      color: var(--dark); font-size: 1.05rem; text-align: center;
+    }
+    .trk-admin-pw {
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: .75rem 1rem;
+      font-family: var(--sans); font-size: .9rem;
+      color: var(--text); outline: none; transition: border-color .25s;
+    }
+    .trk-admin-pw:focus { border-color: var(--accent); }
+    .trk-admin-err { font-size: .72rem; color: #c0392b; text-align: center; }
+    .trk-admin-dash { display: none; }
+    .trk-admin-dash.visible { display: block; }
+    .trk-admin-top {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem;
+    }
+    .trk-admin-title { font-family: var(--round); font-weight: 800; color: var(--dark); font-size: 1.05rem; }
+    .trk-table-wrap {
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 16px; overflow: auto;
+    }
+    .trk-table { width: 100%; border-collapse: collapse; min-width: 640px; }
+    .trk-table th {
+      text-align: left; font-family: var(--sans); font-size: .57rem;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: var(--muted); padding: .9rem 1.1rem;
+      border-bottom: 1.5px solid var(--border); font-weight: 600;
+    }
+    .trk-table td {
+      padding: .8rem 1.1rem; border-bottom: 1px solid var(--bordersub);
+      font-size: .82rem; color: var(--text); vertical-align: middle;
+    }
+    .trk-table tr:last-child td { border-bottom: none; }
+    .trk-table tr:hover td { background: var(--surf); }
+    .trk-code-chip {
+      font-family: 'Courier New', monospace;
+      background: var(--surf2); border-radius: 6px;
+      padding: .2rem .65rem; font-size: .8rem;
+      letter-spacing: .1em; color: var(--dark); font-weight: 700;
+      cursor: pointer; transition: background .2s; white-space: nowrap;
+    }
+    .trk-code-chip:hover { background: var(--accent); }
+    .trk-status-sel {
+      background: var(--surf); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: .35rem .6rem;
+      font-family: var(--sans); font-size: .78rem;
+      color: var(--text); outline: none; cursor: pointer;
+      transition: border-color .2s; max-width: 220px; width: 100%;
+    }
+    .trk-status-sel:focus { border-color: var(--accent); }
+    .trk-table input[type="text"] {
+      background: var(--surf); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: .35rem .6rem;
+      font-family: var(--sans); font-size: .82rem;
+      color: var(--text); outline: none; width: 100%; min-width: 110px;
+      transition: border-color .2s;
+    }
+    .trk-table input[type="text"]:focus { border-color: var(--accent); }
+    .trk-btn-del {
+      background: none; border: 1.5px solid rgba(192,57,43,.25);
+      border-radius: 8px; padding: .3rem .65rem;
+      color: rgba(192,57,43,.5); font-size: .72rem;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .trk-btn-del:hover { background: rgba(192,57,43,.07); border-color: rgba(192,57,43,.5); color: #c0392b; }
+    .trk-btn-add {
+      background: var(--accent); color: var(--dark);
+      border: none; border-radius: 10px; padding: .65rem 1.4rem;
+      font-family: var(--sans); font-size: .72rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      cursor: pointer; transition: background .25s, color .25s;
+    }
+    .trk-btn-add:hover { background: var(--accentdk); color: var(--cream); }
+    .trk-btn-logout {
+      background: none; border: 1.5px solid var(--border);
+      border-radius: 8px; padding: .5rem 1rem;
+      font-family: var(--sans); font-size: .68rem;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); cursor: pointer; transition: all .2s;
+    }
+    .trk-btn-logout:hover { border-color: var(--muted); color: var(--text); }
+    .trk-empty { text-align: center; padding: 3rem; color: var(--faint); font-size: .85rem; }
+    @media (max-width: 768px) {
+      .trk-search { flex-direction: column; }
+      .trk-btn-search { border-radius: 12px; }
+      .trk-steps { flex-direction: column; align-items: flex-start; gap: .5rem; }
+      .trk-steps::before, .trk-progress-line { display: none; }
+      .trk-step { flex-direction: row; align-items: center; gap: .75rem; flex: none; width: 100%; }
+      .trk-step-label { text-align: left; max-width: none; font-size: .72rem; }
+      .trk-card { padding: 1.5rem; }
+    }
+
     /* ─── KEYFRAMES ──────────────────────────────── */
     @keyframes fadeup {
       to { opacity: 1; transform: translateY(0); }
@@ -803,6 +1013,7 @@
     <li><a href="#galeria">galería</a></li>
     <li><a href="#nosotros">nosotros</a></li>
     <li><a href="#proceso">proceso</a></li>
+    <li><a href="#seguimiento">seguimiento</a></li>
     <li><a href="#contacto">contacto</a></li>
   </ul>
   <a href="#contacto" class="nav-cta">cotizar</a>
@@ -816,6 +1027,7 @@
   <a href="#galeria">galería</a>
   <a href="#nosotros">nosotros</a>
   <a href="#proceso">proceso</a>
+  <a href="#seguimiento">seguimiento</a>
   <a href="#contacto">contacto</a>
 </div>
 
@@ -1105,6 +1317,67 @@
   </form>
 </section>
 
+<!-- ═══════════════ PROJECT TRACKING ═══════════════ -->
+<section class="tracking" id="seguimiento">
+  <div class="trk-head">
+    <span class="s-label rev">seguimiento</span>
+    <h2 class="s-title rev" data-d="1">estado de tu <em>proyecto</em></h2>
+    <p class="rev" data-d="2" style="font-size:.9rem;color:var(--muted);margin-top:.75rem;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.7">
+      Ingresa el código único que te compartimos para ver el avance en tiempo real.
+    </p>
+  </div>
+
+  <div class="trk-search rev" data-d="3">
+    <input class="trk-input" id="trk-input" type="text" placeholder="Ej. ABC-123" maxlength="10" autocomplete="off" spellcheck="false">
+    <button class="trk-btn-search" id="trk-search-btn">buscar</button>
+  </div>
+
+  <div class="trk-error" id="trk-error">Código no encontrado. Verifica que sea correcto.</div>
+
+  <div class="trk-card" id="trk-card">
+    <div class="trk-card-name" id="trk-project-name">—</div>
+    <div class="trk-card-client">cliente: <span id="trk-client-name">—</span></div>
+    <div class="trk-steps" id="trk-steps"></div>
+    <div class="trk-current-label">etapa actual: <strong id="trk-current-stage">—</strong></div>
+    <div class="trk-updated" id="trk-updated"></div>
+  </div>
+
+  <button class="trk-admin-toggle" id="trk-admin-toggle">administrar proyectos</button>
+
+  <div class="trk-admin-panel" id="trk-admin-panel">
+    <div class="trk-admin-login" id="trk-admin-login">
+      <h3>acceso administrador</h3>
+      <input class="trk-admin-pw" id="trk-admin-pw" type="password" placeholder="contraseña">
+      <div class="trk-admin-err" id="trk-admin-err"></div>
+      <button class="trk-btn-add" id="trk-admin-login-btn" style="width:100%;justify-content:center">entrar</button>
+    </div>
+    <div class="trk-admin-dash" id="trk-admin-dash">
+      <div class="trk-admin-top">
+        <span class="trk-admin-title">proyectos activos</span>
+        <div style="display:flex;gap:.75rem;align-items:center">
+          <button class="trk-btn-add" id="trk-add-project">+ agregar proyecto</button>
+          <button class="trk-btn-logout" id="trk-logout">cerrar sesión</button>
+        </div>
+      </div>
+      <div class="trk-table-wrap">
+        <table class="trk-table">
+          <thead>
+            <tr>
+              <th>código</th>
+              <th>cliente</th>
+              <th>proyecto</th>
+              <th>estado</th>
+              <th>actualizado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="trk-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer class="footer">
   <span class="footer-logo">cachas house</span>
@@ -1219,7 +1492,7 @@ document.addEventListener('mousemove', e => {
   ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
   requestAnimationFrame(loop);
 })();
-document.querySelectorAll('a, button, .g-item, .filt, .proc').forEach(el => {
+document.querySelectorAll('a, button, .g-item, .filt, .proc, .trk-code-chip').forEach(el => {
   el.addEventListener('mouseenter', () => document.body.classList.add('hov'));
   el.addEventListener('mouseleave', () => document.body.classList.remove('hov'));
 });
@@ -1259,6 +1532,221 @@ function openLb(grad) {
 document.getElementById('lb-close').addEventListener('click', () => lb.classList.remove('on'));
 lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('on'); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+
+/* ─── PROJECT TRACKING ─────────────────────────── */
+(function() {
+  const FIREBASE_URL = 'https://familiafinance071201-default-rtdb.firebaseio.com/';
+  const ADMIN_PW = 'cachas2025'; // change this to a secure password
+  const DB_PATH  = 'cachas-projects';
+  const STAGES   = [
+    'Material en corte',
+    'Material en el taller',
+    'Ensamble en taller',
+    'Control de calidad',
+    'Alistamiento para instalación',
+    'Instalación en sitio',
+    'Entrega final',
+  ];
+
+  const fbApp = firebase.initializeApp({ databaseURL: FIREBASE_URL }, 'cachas-tracking');
+  const db    = firebase.database(fbApp);
+
+  const trkInput        = document.getElementById('trk-input');
+  const trkSearchBtn    = document.getElementById('trk-search-btn');
+  const trkCard         = document.getElementById('trk-card');
+  const trkError        = document.getElementById('trk-error');
+  const trkSteps        = document.getElementById('trk-steps');
+  const trkProjectName  = document.getElementById('trk-project-name');
+  const trkClientName   = document.getElementById('trk-client-name');
+  const trkCurrentStage = document.getElementById('trk-current-stage');
+  const trkUpdated      = document.getElementById('trk-updated');
+  const trkAdminToggle  = document.getElementById('trk-admin-toggle');
+  const trkAdminPanel   = document.getElementById('trk-admin-panel');
+  const trkAdminLogin   = document.getElementById('trk-admin-login');
+  const trkAdminPw      = document.getElementById('trk-admin-pw');
+  const trkAdminErr     = document.getElementById('trk-admin-err');
+  const trkAdminLoginBtn= document.getElementById('trk-admin-login-btn');
+  const trkAdminDash    = document.getElementById('trk-admin-dash');
+  const trkAddProject   = document.getElementById('trk-add-project');
+  const trkLogout       = document.getElementById('trk-logout');
+  const trkTbody        = document.getElementById('trk-tbody');
+
+  /* CLIENT SEARCH */
+  function searchProject() {
+    const code = trkInput.value.trim().toUpperCase().replace(/\s/g,'');
+    if (!code) return;
+    trkError.classList.remove('visible');
+    trkCard.classList.remove('visible');
+    trkSearchBtn.textContent = '...';
+    trkSearchBtn.disabled = true;
+
+    db.ref(DB_PATH + '/' + code).get().then(snap => {
+      trkSearchBtn.textContent = 'buscar';
+      trkSearchBtn.disabled = false;
+      if (!snap.exists()) {
+        trkError.textContent = 'Código no encontrado. Verifica que sea correcto.';
+        trkError.classList.add('visible');
+        return;
+      }
+      renderCard(snap.val());
+    }).catch(() => {
+      trkSearchBtn.textContent = 'buscar';
+      trkSearchBtn.disabled = false;
+      trkError.textContent = 'Error de conexión. Intenta de nuevo.';
+      trkError.classList.add('visible');
+    });
+  }
+
+  trkSearchBtn.addEventListener('click', searchProject);
+  trkInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchProject(); });
+
+  function renderCard(p) {
+    trkProjectName.textContent  = p.project || '—';
+    trkClientName.textContent   = p.client  || '—';
+    trkCurrentStage.textContent = STAGES[p.status] || '—';
+    trkUpdated.textContent = p.updatedAt
+      ? 'actualizado: ' + new Date(p.updatedAt).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' })
+      : '';
+
+    const pct = p.status <= 0 ? 0
+              : p.status >= STAGES.length - 1 ? 100
+              : Math.round((p.status / (STAGES.length - 1)) * 100);
+
+    trkSteps.innerHTML = `<div class="trk-progress-line" style="width:${pct}%"></div>`;
+    STAGES.forEach((label, i) => {
+      const step = document.createElement('div');
+      step.className = 'trk-step' + (i < p.status ? ' done' : i === p.status ? ' active' : '');
+      step.innerHTML = `
+        <div class="trk-dot">
+          <svg viewBox="0 0 12 12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1.5,6 4.5,9.5 10.5,3"/>
+          </svg>
+        </div>
+        <span class="trk-step-label">${label}</span>`;
+      trkSteps.appendChild(step);
+    });
+    trkCard.classList.add('visible');
+  }
+
+  /* ADMIN PANEL */
+  let adminLoggedIn = false;
+  let dbListener   = null;
+
+  trkAdminToggle.addEventListener('click', () => {
+    trkAdminPanel.classList.toggle('visible');
+    if (trkAdminPanel.classList.contains('visible') && !adminLoggedIn) {
+      trkAdminPw.focus();
+    }
+  });
+
+  trkAdminLoginBtn.addEventListener('click', tryLogin);
+  trkAdminPw.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+
+  function tryLogin() {
+    if (trkAdminPw.value === ADMIN_PW) {
+      adminLoggedIn = true;
+      trkAdminLogin.style.display = 'none';
+      trkAdminDash.classList.add('visible');
+      startLiveTable();
+    } else {
+      trkAdminErr.textContent = 'Contraseña incorrecta.';
+      trkAdminPw.select();
+    }
+  }
+
+  trkLogout.addEventListener('click', () => {
+    adminLoggedIn = false;
+    if (dbListener) { db.ref(DB_PATH).off('value', dbListener); dbListener = null; }
+    trkAdminDash.classList.remove('visible');
+    trkAdminLogin.style.display = '';
+    trkAdminPw.value = '';
+    trkAdminErr.textContent = '';
+    trkAdminPanel.classList.remove('visible');
+  });
+
+  function genCode() {
+    const L = 'ABCDEFGHJKLMNPQRSTUVWXYZ', D = '0123456789';
+    let c = '';
+    for (let i = 0; i < 3; i++) c += L[Math.floor(Math.random() * L.length)];
+    c += '-';
+    for (let i = 0; i < 3; i++) c += D[Math.floor(Math.random() * D.length)];
+    return c;
+  }
+
+  function startLiveTable() {
+    dbListener = db.ref(DB_PATH).on('value', snap => {
+      if (!adminLoggedIn) return;
+      renderTable(snap.val() || {});
+    });
+  }
+
+  function renderTable(projects) {
+    const keys = Object.keys(projects);
+    if (keys.length === 0) {
+      trkTbody.innerHTML = '<tr><td colspan="6" class="trk-empty">No hay proyectos aún. Agrega el primero.</td></tr>';
+      return;
+    }
+    trkTbody.innerHTML = '';
+    keys.forEach(code => {
+      const p = projects[code];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="trk-code-chip" title="Copiar código" data-copy="${code}">${code}</span></td>
+        <td><input type="text" value="${esc(p.client||'')}" data-code="${code}" data-field="client" placeholder="Nombre cliente"></td>
+        <td><input type="text" value="${esc(p.project||'')}" data-code="${code}" data-field="project" placeholder="Nombre proyecto"></td>
+        <td>
+          <select class="trk-status-sel" data-code="${code}">
+            ${STAGES.map((s,i) => `<option value="${i}"${p.status==i?' selected':''}>${s}</option>`).join('')}
+          </select>
+        </td>
+        <td style="white-space:nowrap">${p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+        <td><button class="trk-btn-del" data-code="${code}">eliminar</button></td>`;
+      trkTbody.appendChild(tr);
+    });
+
+    trkTbody.querySelectorAll('.trk-code-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        navigator.clipboard.writeText(chip.dataset.copy).then(() => {
+          const orig = chip.textContent;
+          chip.textContent = '✓ copiado';
+          setTimeout(() => chip.textContent = orig, 1500);
+        });
+      });
+    });
+    trkTbody.querySelectorAll('input[type="text"]').forEach(inp => {
+      inp.addEventListener('blur', () => {
+        db.ref(DB_PATH + '/' + inp.dataset.code + '/' + inp.dataset.field).set(inp.value.trim());
+      });
+    });
+    trkTbody.querySelectorAll('.trk-status-sel').forEach(sel => {
+      sel.addEventListener('change', () => {
+        db.ref(DB_PATH + '/' + sel.dataset.code).update({
+          status: parseInt(sel.value),
+          updatedAt: new Date().toISOString(),
+        });
+      });
+    });
+    trkTbody.querySelectorAll('.trk-btn-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (confirm('¿Eliminar el proyecto ' + btn.dataset.code + '?')) {
+          db.ref(DB_PATH + '/' + btn.dataset.code).remove();
+        }
+      });
+    });
+  }
+
+  function esc(s) { return s.replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+  trkAddProject.addEventListener('click', () => {
+    const code = genCode();
+    db.ref(DB_PATH + '/' + code).set({
+      client: 'Nuevo cliente',
+      project: 'Nuevo proyecto',
+      status: 0,
+      updatedAt: new Date().toISOString(),
+    });
+  });
+})();
 
 /* ─── FORM ─────────────────────────────────────── */
 document.getElementById('contact-form').addEventListener('submit', function(e) {
