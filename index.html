@@ -2058,262 +2058,69 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
   const kiLabel    = document.getElementById('ki-label');
   if (!galIntro || !kiCanvas) return;
 
-  const SESSION_KEY = 'ki_played_v4';
+  let sc         = null;  /* Three.js scene state, set after first load */
+  let rafId      = null;  /* current RAF handle                          */
+  let threeReady = false;
+  let threeLoading = false;
 
-  let revealed = false;
+  /* ── UI helpers ── */
+  function showOverlay() {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    galIntro.classList.remove('hidden', 'gone');
+    galContent.classList.remove('visible');
+  }
+
   function revealGallery() {
-    if (revealed) return;
-    revealed = true;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     galIntro.classList.add('hidden');
     galContent.classList.add('visible');
-    setTimeout(() => { galIntro.classList.add('gone'); }, 850);
+    setTimeout(() => galIntro.classList.add('gone'), 850);
   }
 
-  /* Failsafe: always reveal gallery after 9s no matter what */
-  const failsafe = setTimeout(revealGallery, 9000);
+  /* ── Easing ── */
+  function easeOutBack(t) {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
-  /* If already played this session, skip animation */
-  if (sessionStorage.getItem(SESSION_KEY)) {
-    clearTimeout(failsafe);
-    galIntro.classList.add('gone');
-    galContent.classList.add('visible');
-    return;
+  /* ── Reset scene for replay ── */
+  function resetScene() {
+    sc.baseCabs.forEach(m => {
+      m.position.y = sc.DROP_FROM;
+      m.children.forEach(h => h.scale.setScalar(0));
+    });
+    sc.counter.position.set(5.5, sc.countY, 0);
+    sc.upperCabs.forEach(m => {
+      m.position.y = sc.UPPER_DROP_FROM;
+      m.children.forEach(h => h.scale.setScalar(0));
+    });
+    sc.splash.visible = false;
+    sc.underLights.forEach(pl => { pl.intensity = 0; });
+    sc.ambient.intensity = 0.85;
   }
 
-  let animationTriggered = false;
+  /* ── Animation tick (called fresh each play) ── */
+  function startTick() {
+    const { renderer, scene, camera, baseCabs, counter, upperCabs,
+            splash, underLights, ambient,
+            baseY, countY, upperY, DROP_FROM, UPPER_DROP_FROM } = sc;
 
-  function runAnimation() {
-    if (animationTriggered) return;
-    animationTriggered = true;
-
-    /* Dynamically load Three.js then run the scene */
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js';
-    s.onload = buildScene;
-    s.onerror = revealGallery;
-    document.head.appendChild(s);
-  }
-
-  function buildScene() {
-    try {
-    const THREE = window.THREE;
-    if (!THREE) { revealGallery(); return; }
-
-    /* ── Canvas & renderer ── */
-    const W = kiCanvas.clientWidth  || 700;
-    const H = kiCanvas.clientHeight || 340;
-    kiCanvas.width  = W;
-    kiCanvas.height = H;
-
-    const renderer = new THREE.WebGLRenderer({ canvas: kiCanvas, antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(W, H);
-    renderer.setClearColor(0xF4F1EB, 1);
-    renderer.shadowMap.enabled = true;
-
-    const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 50);
-    camera.position.set(0, 0.7, 6.2);
-    camera.lookAt(0, -0.25, 0);
-
-    /* ── Lights ── */
-    const ambient = new THREE.AmbientLight(0xfff8f0, 0.85);
-    scene.add(ambient);
-    const sun = new THREE.DirectionalLight(0xfff0e0, 1.2);
-    sun.position.set(2, 6, 5);
-    sun.castShadow = true;
-    scene.add(sun);
-    const rim = new THREE.DirectionalLight(0xd4e8f0, 0.35);
-    rim.position.set(-4, 3, -2);
-    scene.add(rim);
-
-    const underLights = [-1.07, 0, 1.07].map(x => {
-      const pl = new THREE.PointLight(0xFFD080, 0, 1.8);
-      pl.position.set(x, -0.12, 0.5);
-      scene.add(pl);
-      return pl;
-    });
-
-    /* ── Procedural wood grain texture ── */
-    function makeWoodTex(rB, gB, bB, seed) {
-      const sz = 256, cv = document.createElement('canvas');
-      cv.width = cv.height = sz;
-      const ctx = cv.getContext('2d');
-      ctx.fillStyle = `rgb(${rB},${gB},${bB})`;
-      ctx.fillRect(0, 0, sz, sz);
-      /* top-to-bottom gradient for depth */
-      const grd = ctx.createLinearGradient(0, 0, 0, sz);
-      grd.addColorStop(0, 'rgba(255,255,255,.09)');
-      grd.addColorStop(1, 'rgba(0,0,0,.09)');
-      ctx.fillStyle = grd; ctx.fillRect(0, 0, sz, sz);
-      /* deterministic grain lines */
-      let s = seed;
-      const rnd = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 4294967295; };
-      const rG = Math.max(0, rB - 52), gG = Math.max(0, gB - 42), bG = Math.max(0, bB - 32);
-      for (let i = 0; i < 50; i++) {
-        const x = rnd() * sz, a = rnd() * 0.2 + 0.04, lw = rnd() * 1.6 + 0.3;
-        ctx.strokeStyle = `rgba(${rG},${gG},${bG},${a.toFixed(3)})`;
-        ctx.lineWidth = lw;
-        ctx.beginPath(); ctx.moveTo(x, 0);
-        for (let y = 0; y <= sz; y += 4)
-          ctx.lineTo(x + Math.sin(y * 0.04 + rnd() * 0.6) * 4 + Math.sin(y * 0.011 + i) * 2, y);
-        ctx.stroke();
-      }
-      /* occasional wider ring lines */
-      for (let i = 0; i < 10; i++) {
-        const x = rnd() * sz, a = rnd() * 0.1 + 0.02;
-        ctx.strokeStyle = `rgba(${rG},${gG},${bG},${a.toFixed(3)})`;
-        ctx.lineWidth = rnd() * 3 + 1;
-        ctx.beginPath(); ctx.moveTo(x, 0);
-        for (let y = 0; y <= sz; y += 6)
-          ctx.lineTo(x + Math.sin(y * 0.025 + i * 0.8) * 6, y);
-        ctx.stroke();
-      }
-      return new THREE.CanvasTexture(cv);
-    }
-
-    /* ── Procedural marble texture ── */
-    function makeMarbleTex() {
-      const sz = 512, cv = document.createElement('canvas');
-      cv.width = cv.height = sz;
-      const ctx = cv.getContext('2d');
-      ctx.fillStyle = '#CEC7BC'; ctx.fillRect(0, 0, sz, sz);
-      const grd = ctx.createLinearGradient(0, 0, sz, sz);
-      grd.addColorStop(0, 'rgba(255,255,255,.12)');
-      grd.addColorStop(.5, 'rgba(0,0,0,.04)');
-      grd.addColorStop(1, 'rgba(255,255,255,.08)');
-      ctx.fillStyle = grd; ctx.fillRect(0, 0, sz, sz);
-      /* deterministic veins */
-      [
-        [30,20,  120,160, 280,120, 400,360, 'rgba(168,160,150,.50)', 2.2],
-        [0, 120, 160,200, 320,160, 512,280, 'rgba(145,137,129,.38)', 1.2],
-        [200,0,  240,200, 180,320, 120,512, 'rgba(182,175,165,.32)', 2.8],
-        [360,40, 400,200, 320,360, 280,512, 'rgba(152,145,136,.28)', 1.0],
-        [100,400,200,360, 360,440, 480,490, 'rgba(192,186,178,.22)', 1.6],
-        [0,  290,110,260, 210,295, 310,195, 'rgba(158,150,142,.32)', 0.8],
-        [420,80, 460,180, 400,300, 350,420, 'rgba(140,132,124,.20)', 1.4],
-      ].forEach(([x1,y1,cx1,cy1,cx2,cy2,x2,y2,color,w]) => {
-        ctx.strokeStyle = color; ctx.lineWidth = w;
-        ctx.beginPath(); ctx.moveTo(x1,y1);
-        ctx.bezierCurveTo(cx1,cy1,cx2,cy2,x2,y2); ctx.stroke();
-        /* thin shadow vein */
-        ctx.lineWidth = w * 0.35;
-        ctx.strokeStyle = color.replace(/[\d.]+\)$/, v => (parseFloat(v) * 0.45).toFixed(2) + ')');
-        ctx.beginPath(); ctx.moveTo(x1+5,y1+5);
-        ctx.bezierCurveTo(cx1+5,cy1+5,cx2+5,cy2+5,x2+5,y2+5); ctx.stroke();
-      });
-      return new THREE.CanvasTexture(cv);
-    }
-
-    /* ── Generate textures ── */
-    const texBase  = makeWoodTex(212, 174, 120, 12345); /* honey oak — base cabs  */
-    const texUpper = makeWoodTex(196, 156, 104, 67890); /* medium oak — upper cabs */
-    const texMrbl  = makeMarbleTex();
-
-    function solidMat(hex) { return new THREE.MeshLambertMaterial({ color: hex }); }
-    function texMat(tex)    { return new THREE.MeshLambertMaterial({ map: tex }); }
-
-    /* BoxGeometry face order: +x, -x, +y, -y, +z(front), -z */
-    function cabinetMats(woodTex, topHex, sideHex) {
-      return [solidMat(sideHex), solidMat(sideHex), solidMat(topHex),
-              solidMat(sideHex), texMat(woodTex),   solidMat(sideHex)];
-    }
-
-    function makeBox(w, h, d, mats) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats);
-      mesh.castShadow = mesh.receiveShadow = true;
-      return mesh;
-    }
-
-    function addHandle(parent, w, h, depth) {
-      const handle = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.022, 0.022, w * 0.36, 8),
-        solidMat(0xC8923A)
-      );
-      handle.rotation.z = Math.PI / 2;
-      handle.position.set(0, -h * 0.15, depth / 2 + 0.025);
-      handle.castShadow = true;
-      parent.add(handle);
-    }
-
-    /* ── Scene geometry ── */
-    const FLOOR = -1.35;
-    const BW = 1.0,  BH = 0.80, BD = 0.56;
-    const CW = 3.14, CH = 0.07, CD = 0.60;
-    const UW = 1.0,  UH = 0.60, UD = 0.38;
-    const baseY  = FLOOR + BH / 2;
-    const countY = FLOOR + BH + CH / 2;
-    const upperY = countY + CH / 2 + 0.42 + UH / 2;
-    const XS     = [-1.07, 0, 1.07];
-    const DROP_FROM       = baseY  + 4.2;
-    const UPPER_DROP_FROM = upperY + 4.2;
-
-    /* Floor */
-    const floorM = new THREE.Mesh(new THREE.PlaneGeometry(9, 5), solidMat(0xD0C8BC));
-    floorM.rotation.x = -Math.PI / 2; floorM.position.y = FLOOR;
-    floorM.receiveShadow = true; scene.add(floorM);
-
-    /* Back wall */
-    const bwM = new THREE.Mesh(new THREE.PlaneGeometry(9, 4), solidMat(0xEFECE6));
-    bwM.position.set(0, 0.65, -1.2); scene.add(bwM);
-
-    /* Base cabinets — honey oak wood grain */
-    const baseCabs = XS.map(x => {
-      const m = makeBox(BW, BH, BD, cabinetMats(texBase, 0xC4A070, 0xBE9868));
-      m.position.set(x, DROP_FROM, 0);
-      addHandle(m, BW, BH, BD);
-      scene.add(m); return m;
-    });
-
-    /* Countertop — marble on top face, stone sides */
-    const counterMats = [
-      solidMat(0xB8B0A5), solidMat(0xB8B0A5),
-      texMat(texMrbl),               /* +y top face: marble */
-      solidMat(0xB8B0A5), solidMat(0xB8B0A5), solidMat(0xB8B0A5),
-    ];
-    const counter = makeBox(CW, CH, CD, counterMats);
-    counter.position.set(5.5, countY, 0); scene.add(counter);
-
-    /* Upper cabinets — medium oak wood grain */
-    const upperCabs = XS.map(x => {
-      const m = makeBox(UW, UH, UD, cabinetMats(texUpper, 0xB08858, 0xA87848));
-      m.position.set(x, UPPER_DROP_FROM, 0);
-      addHandle(m, UW, UH, UD);
-      scene.add(m); return m;
-    });
-
-    /* Backsplash between counter and upper cabs */
-    const splash = makeBox(CW + 0.06, 0.42, 0.04, Array(6).fill(solidMat(0xE6E0D8)));
-    splash.position.set(0, countY + CH / 2 + 0.21, -CD / 2 + 0.02);
-    splash.visible = false; scene.add(splash);
-
-    /* ── Easing ── */
-    function easeOutBack(t) {
-      const c1 = 1.70158, c3 = c1 + 1;
-      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
-    }
-    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-
-    /* Handles start hidden */
-    [...baseCabs, ...upperCabs].forEach(c => c.children.forEach(h => h.scale.setScalar(0)));
-
-    /* ── Animation timeline ── */
-    const T0 = performance.now();
+    /* Extended timing — ~8s total animation */
     const steps = [
-      { mesh: baseCabs[0], startT: 0,    dur: 500, fromY: DROP_FROM,       toY: baseY,  ease: easeOutBack },
-      { mesh: baseCabs[1], startT: 170,  dur: 500, fromY: DROP_FROM,       toY: baseY,  ease: easeOutBack },
-      { mesh: baseCabs[2], startT: 340,  dur: 500, fromY: DROP_FROM,       toY: baseY,  ease: easeOutBack },
-      { mesh: counter,     startT: 900,  dur: 580, fromX: 5.5,             toX: 0,      ease: easeOutCubic },
-      { mesh: upperCabs[0],startT: 1600, dur: 460, fromY: UPPER_DROP_FROM, toY: upperY, ease: easeOutBack },
-      { mesh: upperCabs[1],startT: 1790, dur: 460, fromY: UPPER_DROP_FROM, toY: upperY, ease: easeOutBack },
-      { mesh: upperCabs[2],startT: 1980, dur: 460, fromY: UPPER_DROP_FROM, toY: upperY, ease: easeOutBack },
+      { mesh: baseCabs[0], startT:    0, dur: 700, fromY: DROP_FROM,       toY: baseY,  ease: easeOutBack },
+      { mesh: baseCabs[1], startT:  300, dur: 700, fromY: DROP_FROM,       toY: baseY,  ease: easeOutBack },
+      { mesh: baseCabs[2], startT:  600, dur: 700, fromY: DROP_FROM,       toY: baseY,  ease: easeOutBack },
+      { mesh: counter,     startT: 1550, dur: 900, fromX: 5.5,             toX: 0,      ease: easeOutCubic },
+      { mesh: upperCabs[0],startT: 2700, dur: 680, fromY: UPPER_DROP_FROM, toY: upperY, ease: easeOutBack },
+      { mesh: upperCabs[1],startT: 3020, dur: 680, fromY: UPPER_DROP_FROM, toY: upperY, ease: easeOutBack },
+      { mesh: upperCabs[2],startT: 3340, dur: 680, fromY: UPPER_DROP_FROM, toY: upperY, ease: easeOutBack },
     ];
 
-    let splashShown = false;
-    let doneAt = null;
-    const FADE_DELAY = 900;
+    let splashShown = false, doneAt = null;
+    const T0 = performance.now();
 
-    function animTick(now) {
+    function tick(now) {
       const elapsed = now - T0;
       let allSettled = true;
 
@@ -2325,50 +2132,225 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
         if (step.fromX !== undefined) step.mesh.position.x = step.fromX + (step.toX - step.fromX) * p;
       });
 
-      if (!splashShown && elapsed > 2460) { splashShown = true; splash.visible = true; }
+      /* Backsplash appears after upper cabs land */
+      if (!splashShown && elapsed > 4100) { splashShown = true; splash.visible = true; }
 
       /* Handles pop in */
-      const ht = Math.max(0, Math.min(1, (elapsed - 2540) / 320));
+      const ht = Math.max(0, Math.min(1, (elapsed - 4250) / 500));
       [...baseCabs, ...upperCabs].forEach(c => c.children.forEach(h => h.scale.setScalar(easeOutBack(ht))));
 
-      /* Under-cabinet warm glow turns on at end */
-      if (elapsed > 3000) {
-        const lt = Math.min(1, (elapsed - 3000) / 600);
+      /* Under-cabinet warm glow */
+      if (elapsed > 5200) {
+        const lt = Math.min(1, (elapsed - 5200) / 900);
         underLights.forEach(pl => { pl.intensity = easeOutCubic(lt) * 1.1; });
         ambient.intensity = 0.85 + easeOutCubic(lt) * 0.25;
       }
 
       /* Label */
-      if      (elapsed < 900)  kiLabel.textContent = 'colocando muebles base…';
-      else if (elapsed < 1600) kiLabel.textContent = 'instalando encimera…';
-      else if (elapsed < 2540) kiLabel.textContent = 'montando gabinetes altos…';
-      else if (elapsed < 3000) kiLabel.textContent = 'terminando detalles…';
+      if      (elapsed < 1550) kiLabel.textContent = 'colocando muebles base…';
+      else if (elapsed < 2700) kiLabel.textContent = 'instalando encimera…';
+      else if (elapsed < 4250) kiLabel.textContent = 'montando gabinetes altos…';
+      else if (elapsed < 5200) kiLabel.textContent = 'terminando detalles…';
       else                     kiLabel.textContent = '✨ ¡lista tu cocina!';
 
       renderer.render(scene, camera);
 
-      if (allSettled && elapsed > 3300) {
+      /* Reveal gallery ~1.5s after everything settles (≥ elapsed 6500) */
+      if (allSettled && elapsed > 6500) {
         if (!doneAt) doneAt = now;
-        if (now - doneAt > FADE_DELAY) {
-          sessionStorage.setItem(SESSION_KEY, '1');
-          revealGallery();
-          return;
-        }
+        if (now - doneAt > 1400) { revealGallery(); return; }
       }
 
-      requestAnimationFrame(animTick);
+      rafId = requestAnimationFrame(tick);
     }
 
-    requestAnimationFrame(animTick);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  /* ── Main entry point ── */
+  function playAnimation() {
+    showOverlay();
+    if (threeReady && sc) {
+      resetScene();
+      startTick();
+    } else if (!threeLoading) {
+      threeLoading = true;
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js';
+      s.onload = buildScene;
+      s.onerror = revealGallery;
+      document.head.appendChild(s);
+    }
+    /* else Three.js still loading — buildScene() will call startTick() */
+  }
+
+  /* ── Build Three.js scene (runs once, stores state in sc) ── */
+  function buildScene() {
+    try {
+      const THREE = window.THREE;
+      if (!THREE) { revealGallery(); return; }
+
+      const W = kiCanvas.clientWidth  || 700;
+      const H = kiCanvas.clientHeight || 340;
+      kiCanvas.width  = W;
+      kiCanvas.height = H;
+
+      const renderer = new THREE.WebGLRenderer({ canvas: kiCanvas, antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(W, H);
+      renderer.setClearColor(0xF4F1EB, 1);
+      renderer.shadowMap.enabled = true;
+
+      const scene  = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 50);
+      camera.position.set(0, 0.7, 6.2);
+      camera.lookAt(0, -0.25, 0);
+
+      const ambient = new THREE.AmbientLight(0xfff8f0, 0.85);
+      scene.add(ambient);
+      const sun = new THREE.DirectionalLight(0xfff0e0, 1.2);
+      sun.position.set(2, 6, 5); sun.castShadow = true; scene.add(sun);
+      const rim = new THREE.DirectionalLight(0xd4e8f0, 0.35);
+      rim.position.set(-4, 3, -2); scene.add(rim);
+
+      const underLights = [-1.07, 0, 1.07].map(x => {
+        const pl = new THREE.PointLight(0xFFD080, 0, 1.8);
+        pl.position.set(x, -0.12, 0.5); scene.add(pl); return pl;
+      });
+
+      /* ── Procedural wood grain texture ── */
+      function makeWoodTex(rB, gB, bB, seed) {
+        const sz = 256, cv = document.createElement('canvas');
+        cv.width = cv.height = sz;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = `rgb(${rB},${gB},${bB})`; ctx.fillRect(0, 0, sz, sz);
+        const grd = ctx.createLinearGradient(0, 0, 0, sz);
+        grd.addColorStop(0, 'rgba(255,255,255,.09)'); grd.addColorStop(1, 'rgba(0,0,0,.09)');
+        ctx.fillStyle = grd; ctx.fillRect(0, 0, sz, sz);
+        let s = seed;
+        const rnd = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 4294967295; };
+        const rG = Math.max(0, rB - 52), gG = Math.max(0, gB - 42), bG = Math.max(0, bB - 32);
+        for (let i = 0; i < 50; i++) {
+          const x = rnd() * sz, a = rnd() * 0.2 + 0.04, lw = rnd() * 1.6 + 0.3;
+          ctx.strokeStyle = `rgba(${rG},${gG},${bG},${a.toFixed(3)})`; ctx.lineWidth = lw;
+          ctx.beginPath(); ctx.moveTo(x, 0);
+          for (let y = 0; y <= sz; y += 4)
+            ctx.lineTo(x + Math.sin(y * 0.04 + rnd() * 0.6) * 4 + Math.sin(y * 0.011 + i) * 2, y);
+          ctx.stroke();
+        }
+        for (let i = 0; i < 10; i++) {
+          const x = rnd() * sz, a = rnd() * 0.1 + 0.02;
+          ctx.strokeStyle = `rgba(${rG},${gG},${bG},${a.toFixed(3)})`; ctx.lineWidth = rnd() * 3 + 1;
+          ctx.beginPath(); ctx.moveTo(x, 0);
+          for (let y = 0; y <= sz; y += 6)
+            ctx.lineTo(x + Math.sin(y * 0.025 + i * 0.8) * 6, y);
+          ctx.stroke();
+        }
+        return new THREE.CanvasTexture(cv);
+      }
+
+      /* ── Procedural marble texture ── */
+      function makeMarbleTex() {
+        const sz = 512, cv = document.createElement('canvas');
+        cv.width = cv.height = sz;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#CEC7BC'; ctx.fillRect(0, 0, sz, sz);
+        const grd = ctx.createLinearGradient(0, 0, sz, sz);
+        grd.addColorStop(0, 'rgba(255,255,255,.12)'); grd.addColorStop(.5, 'rgba(0,0,0,.04)'); grd.addColorStop(1, 'rgba(255,255,255,.08)');
+        ctx.fillStyle = grd; ctx.fillRect(0, 0, sz, sz);
+        [
+          [30,20,120,160,280,120,400,360,'rgba(168,160,150,.50)',2.2],
+          [0,120,160,200,320,160,512,280,'rgba(145,137,129,.38)',1.2],
+          [200,0,240,200,180,320,120,512,'rgba(182,175,165,.32)',2.8],
+          [360,40,400,200,320,360,280,512,'rgba(152,145,136,.28)',1.0],
+          [100,400,200,360,360,440,480,490,'rgba(192,186,178,.22)',1.6],
+          [0,290,110,260,210,295,310,195,'rgba(158,150,142,.32)',0.8],
+          [420,80,460,180,400,300,350,420,'rgba(140,132,124,.20)',1.4],
+        ].forEach(([x1,y1,cx1,cy1,cx2,cy2,x2,y2,color,w]) => {
+          ctx.strokeStyle = color; ctx.lineWidth = w;
+          ctx.beginPath(); ctx.moveTo(x1,y1); ctx.bezierCurveTo(cx1,cy1,cx2,cy2,x2,y2); ctx.stroke();
+          ctx.lineWidth = w * 0.35;
+          ctx.strokeStyle = color.replace(/[\d.]+\)$/, v => (parseFloat(v) * 0.45).toFixed(2) + ')');
+          ctx.beginPath(); ctx.moveTo(x1+5,y1+5); ctx.bezierCurveTo(cx1+5,cy1+5,cx2+5,cy2+5,x2+5,y2+5); ctx.stroke();
+        });
+        return new THREE.CanvasTexture(cv);
+      }
+
+      const texBase  = makeWoodTex(212, 174, 120, 12345);
+      const texUpper = makeWoodTex(196, 156, 104, 67890);
+      const texMrbl  = makeMarbleTex();
+
+      function solidMat(hex) { return new THREE.MeshLambertMaterial({ color: hex }); }
+      function texMat(tex)    { return new THREE.MeshLambertMaterial({ map: tex }); }
+      function cabinetMats(woodTex, topHex, sideHex) {
+        return [solidMat(sideHex), solidMat(sideHex), solidMat(topHex), solidMat(sideHex), texMat(woodTex), solidMat(sideHex)];
+      }
+      function makeBox(w, h, d, mats) {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats);
+        mesh.castShadow = mesh.receiveShadow = true; return mesh;
+      }
+      function addHandle(parent, w, h, depth) {
+        const handle = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.022, 0.022, w * 0.36, 8), solidMat(0xC8923A)
+        );
+        handle.rotation.z = Math.PI / 2;
+        handle.position.set(0, -h * 0.15, depth / 2 + 0.025);
+        handle.castShadow = true; parent.add(handle);
+      }
+
+      const FLOOR = -1.35;
+      const BW=1.0, BH=0.80, BD=0.56, CW=3.14, CH=0.07, CD=0.60, UW=1.0, UH=0.60, UD=0.38;
+      const baseY  = FLOOR + BH / 2;
+      const countY = FLOOR + BH + CH / 2;
+      const upperY = countY + CH / 2 + 0.42 + UH / 2;
+      const XS = [-1.07, 0, 1.07];
+      const DROP_FROM       = baseY  + 4.2;
+      const UPPER_DROP_FROM = upperY + 4.2;
+
+      const floorM = new THREE.Mesh(new THREE.PlaneGeometry(9, 5), solidMat(0xD0C8BC));
+      floorM.rotation.x = -Math.PI / 2; floorM.position.y = FLOOR; floorM.receiveShadow = true; scene.add(floorM);
+      const bwM = new THREE.Mesh(new THREE.PlaneGeometry(9, 4), solidMat(0xEFECE6));
+      bwM.position.set(0, 0.65, -1.2); scene.add(bwM);
+
+      const baseCabs = XS.map(x => {
+        const m = makeBox(BW, BH, BD, cabinetMats(texBase, 0xC4A070, 0xBE9868));
+        m.position.set(x, DROP_FROM, 0); addHandle(m, BW, BH, BD); scene.add(m); return m;
+      });
+
+      const counterMats = [solidMat(0xB8B0A5), solidMat(0xB8B0A5), texMat(texMrbl), solidMat(0xB8B0A5), solidMat(0xB8B0A5), solidMat(0xB8B0A5)];
+      const counter = makeBox(CW, CH, CD, counterMats);
+      counter.position.set(5.5, countY, 0); scene.add(counter);
+
+      const upperCabs = XS.map(x => {
+        const m = makeBox(UW, UH, UD, cabinetMats(texUpper, 0xB08858, 0xA87848));
+        m.position.set(x, UPPER_DROP_FROM, 0); addHandle(m, UW, UH, UD); scene.add(m); return m;
+      });
+
+      const splash = makeBox(CW + 0.06, 0.42, 0.04, Array(6).fill(solidMat(0xE6E0D8)));
+      splash.position.set(0, countY + CH / 2 + 0.21, -CD / 2 + 0.02);
+      splash.visible = false; scene.add(splash);
+
+      /* Store state for reset on replay */
+      sc = { renderer, scene, camera, ambient, underLights,
+             baseCabs, counter, upperCabs, splash,
+             baseY, countY, upperY, DROP_FROM, UPPER_DROP_FROM };
+      threeReady = true;
+      threeLoading = false;
+      startTick();
     } catch(e) { revealGallery(); }
   }
 
-  /* ── Trigger on scroll into view (once) ── */
+  /* ── Click any [href="#galeria"] link → play/replay animation ── */
+  document.querySelectorAll('a[href="#galeria"]').forEach(link => {
+    link.addEventListener('click', () => setTimeout(playAnimation, 80));
+  });
+
+  /* ── Scroll fallback: trigger on first scroll into view ── */
   const galSection = document.getElementById('galeria');
   const io = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) {
+    if (entries[0].isIntersecting && !threeReady && !threeLoading) {
       io.disconnect();
-      runAnimation();
+      playAnimation();
     }
   }, { threshold: 0.1 });
   io.observe(galSection);
