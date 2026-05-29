@@ -508,25 +508,18 @@
       scrollbar-width: none; margin-top: .25rem;
     }
     .gallery-filters-wrap::-webkit-scrollbar { display: none; }
-    .gallery-filters { display: flex; flex-wrap: nowrap; gap: .5rem; padding-bottom: 4px; }
+    .gallery-filters { display: flex; flex-wrap: nowrap; gap: 2.25rem; padding-bottom: 2px; }
     .filt {
-      font-family: var(--sans); font-size: .68rem; font-weight: 500;
-      letter-spacing: .1em; text-transform: uppercase;
-      padding: .5rem 1.25rem; border: 1.5px solid var(--bordersub);
-      border-radius: 100px; color: var(--muted);
-      transition: all .25s; background: transparent;
+      font-family: var(--sans); font-size: .72rem; font-weight: 600;
+      letter-spacing: .13em; text-transform: uppercase;
+      padding: .4rem 0; background: none; border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--faint);
+      transition: color .3s, border-color .3s;
       white-space: nowrap; flex-shrink: 0;
-      display: inline-flex; align-items: center; gap: .4rem;
     }
-    .filt:hover { border-color: var(--accent); color: var(--accentdk); }
-    .filt.on { background: var(--accent); border-color: var(--accent); color: var(--dark); }
-    .filt-count {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 18px; height: 18px; border-radius: 50%;
-      background: rgba(84,79,75,.12); font-size: .54rem; font-weight: 700;
-      transition: background .25s, color .25s;
-    }
-    .filt.on .filt-count { background: rgba(61,57,53,.18); color: var(--dark); }
+    .filt:hover { color: var(--text); }
+    .filt.on { color: var(--accentdk); border-bottom-color: var(--accent); }
 
     /* ── GALLERY CAROUSEL ───────────────────────── */
     .gcar {
@@ -1248,10 +1241,10 @@
       <h2 class="s-title rev" data-d="1">nuestro <em>trabajo</em></h2>
       <div class="gallery-filters-wrap rev" data-d="2">
         <div class="gallery-filters">
-          <button class="filt on" data-f="all">todo <span class="filt-count">35</span></button>
-          <button class="filt" data-f="cocinas">cocinas <span class="filt-count">20</span></button>
-          <button class="filt" data-f="entretenimiento">entretenimiento <span class="filt-count">9</span></button>
-          <button class="filt" data-f="closet">closet <span class="filt-count">6</span></button>
+          <button class="filt on" data-f="all">todo</button>
+          <button class="filt" data-f="cocinas">cocinas</button>
+          <button class="filt" data-f="entretenimiento">entretenimiento</button>
+          <button class="filt" data-f="closet">closet</button>
         </div>
       </div>
     </div>
