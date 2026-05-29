@@ -556,32 +556,33 @@
     }
     .gcar-expand {
       position: absolute; top: 1rem; right: 1rem;
-      width: 40px; height: 40px; border-radius: 50%;
-      border: 1.5px solid rgba(240,237,230,.25);
+      width: 36px; height: 36px; border-radius: 4px;
+      border: 1px solid rgba(240,237,230,.18);
       display: flex; align-items: center; justify-content: center;
-      background: rgba(20,18,16,.52); backdrop-filter: blur(8px);
-      z-index: 5; transition: border-color .25s;
+      background: rgba(10,8,6,.38); backdrop-filter: blur(12px);
+      z-index: 5; transition: background .25s, border-color .25s, transform .2s;
     }
-    .gcar-expand:hover { border-color: rgba(235,180,120,.8); }
-    .gcar-expand svg { width: 14px; height: 14px; stroke: var(--cream); fill: none; }
-    .gcar-counter {
-      position: absolute; bottom: 1.1rem; right: 1.1rem;
-      font-family: var(--sans); font-size: .6rem; font-weight: 500;
-      letter-spacing: .1em; color: rgba(240,237,230,.5);
-      background: rgba(20,18,16,.45); backdrop-filter: blur(8px);
-      padding: .25rem .75rem; border-radius: 100px; z-index: 5;
-    }
-    /* prev/next */
+    .gcar-expand:hover { background: rgba(235,180,120,.18); border-color: rgba(235,180,120,.55); transform: scale(1.08); }
+    .gcar-expand svg { width: 13px; height: 13px; stroke: var(--cream); fill: none; }
+    .gcar-counter { display: none; }
+    /* prev/next — slim rectangular premium style */
     .gcar-nav {
       position: absolute; top: 50%; transform: translateY(-50%);
-      width: 48px; height: 48px; border-radius: 50%;
-      border: 1.5px solid rgba(240,237,230,.18);
+      width: 44px; height: 68px; border-radius: 4px;
+      border: 1px solid rgba(240,237,230,.15);
       display: flex; align-items: center; justify-content: center;
-      background: rgba(20,18,16,.52); backdrop-filter: blur(8px);
-      color: rgba(240,237,230,.75); transition: all .25s; z-index: 10;
+      background: rgba(10,8,6,.38); backdrop-filter: blur(12px);
+      color: rgba(240,237,230,.6);
+      transition: background .25s, border-color .25s, color .25s, transform .25s;
+      z-index: 10;
     }
-    .gcar-nav:hover { border-color: var(--accent); color: var(--accent); background: rgba(235,180,120,.1); }
-    .gcar-nav svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+    .gcar-nav:hover {
+      background: rgba(235,180,120,.18);
+      border-color: rgba(235,180,120,.55);
+      color: var(--accent);
+      transform: translateY(-50%) scaleY(1.06);
+    }
+    .gcar-nav svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
     .gcar-prev { left: 1rem; }
     .gcar-next { right: 1rem; }
     .gallery-more { display: flex; justify-content: center; margin-top: 2rem; }
@@ -1290,7 +1291,7 @@
 
   <div class="about-visual rev" data-d="1">
     <div class="about-main"><img src="images/galeria/cocinas/cocina-damar-t7.jpg" alt="cocina integral cachas house" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
-    <div class="about-accent"><img src="images/galeria/closet/closet-estandar.jpg" alt="closet cachas house" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
+    <div class="about-accent"><img src="images/galeria/entretenimiento/tv-ciudad-jardin.jpg" alt="centro de entretenimiento cachas house" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
     <div class="about-badge">
       <div class="about-badge-n">3<sup style="font-size:.55em;vertical-align:super">+</sup></div>
       <div class="about-badge-l">años de<br>experiencia</div>
@@ -1309,7 +1310,7 @@
     <div class="stat-l">años de experiencia</div>
   </div>
   <div class="stat rev" data-d="3">
-    <div class="stat-n"><span class="cnt" data-t="98">0</span><b>%</b></div>
+    <div class="stat-n"><span class="cnt" data-t="100">0</span><b>%</b></div>
     <div class="stat-l">clientes satisfechos</div>
   </div>
 </div>
