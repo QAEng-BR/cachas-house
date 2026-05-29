@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="cachas house — artesanía en madera hecha a mano. muebles, cocinas, puertas y decoración.">
+  <meta name="description" content="cachas house — artesanía en madera hecha a mano. cocinas integrales y centros de entretenimiento.">
   <title>cachas house — artesanía en madera</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -413,76 +413,86 @@
 
     /* ─── GALLERY ────────────────────────────────── */
     .gallery {
-      padding: clamp(3.5rem,7vw,7rem) clamp(1.5rem,5vw,4rem);
+      padding: clamp(3.5rem,7vw,7rem) clamp(1rem,4vw,4rem);
       background: var(--surf);
     }
     .gallery-head {
       margin-bottom: 2.5rem;
       display: flex; flex-direction: column; gap: 1rem;
     }
-    .gallery-filters { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .25rem; }
+    .gallery-filters-wrap {
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; margin-top: .25rem;
+    }
+    .gallery-filters-wrap::-webkit-scrollbar { display: none; }
+    .gallery-filters { display: flex; flex-wrap: nowrap; gap: .5rem; padding-bottom: 4px; }
     .filt {
       font-family: var(--sans); font-size: .68rem; font-weight: 500;
       letter-spacing: .1em; text-transform: uppercase;
-      padding: .45rem 1.1rem; border: 1.5px solid var(--bordersub);
+      padding: .5rem 1.25rem; border: 1.5px solid var(--bordersub);
       border-radius: 100px; color: var(--muted);
       transition: all .25s; background: transparent;
+      white-space: nowrap; flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: .4rem;
     }
     .filt:hover { border-color: var(--accent); color: var(--accentdk); }
-    .filt.on {
-      background: var(--accent); border-color: var(--accent);
-      color: var(--dark);
+    .filt.on { background: var(--accent); border-color: var(--accent); color: var(--dark); }
+    .filt-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(84,79,75,.12); font-size: .54rem; font-weight: 700;
+      transition: background .25s, color .25s;
     }
+    .filt.on .filt-count { background: rgba(61,57,53,.18); color: var(--dark); }
 
     /* masonry */
-    .gallery-grid { columns: 3; column-gap: 1.125rem; }
+    .gallery-grid { columns: 3; column-gap: 1rem; }
     .g-item {
-      break-inside: avoid; margin-bottom: 1.125rem;
-      border-radius: 12px; overflow: hidden; position: relative;
+      break-inside: avoid; margin-bottom: 1rem;
+      border-radius: 14px; overflow: hidden; position: relative;
       transition: transform .4s var(--ease), box-shadow .4s;
-      box-shadow: 0 2px 12px rgba(84,79,75,.06);
+      box-shadow: 0 2px 12px rgba(84,79,75,.06); cursor: pointer;
     }
     .g-item:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(84,79,75,.14);
+      transform: translateY(-5px);
+      box-shadow: 0 16px 40px rgba(84,79,75,.16);
     }
-    .g-img {
-      width: 100%; position: relative; overflow: hidden;
-    }
-    .g-img-inner {
+    .g-img { width: 100%; position: relative; overflow: hidden; }
+    .g-img-inner, .g-img img {
       position: absolute; inset: 0;
-      transition: transform .6s var(--ease);
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .7s var(--ease);
     }
-    .g-item:hover .g-img-inner { transform: scale(1.055); }
-    .g-overlay {
+    .g-item:hover .g-img-inner,
+    .g-item:hover .g-img img { transform: scale(1.08); }
+    .g-chip {
+      position: absolute; top: .75rem; left: .75rem;
+      font-family: var(--sans); font-size: .54rem; font-weight: 600;
+      letter-spacing: .14em; text-transform: uppercase;
+      padding: .28rem .72rem; border-radius: 100px;
+      background: rgba(30,28,26,.55); backdrop-filter: blur(8px);
+      color: rgba(240,237,230,.85); pointer-events: none;
+    }
+    .g-shine {
       position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(61,57,53,.95) 0%, rgba(61,57,53,.1) 55%, transparent 100%);
-      opacity: 0; transition: opacity .4s;
-      display: flex; flex-direction: column;
-      justify-content: flex-end; padding: 1.25rem;
+      background: linear-gradient(to top, rgba(30,28,26,.52) 0%, transparent 45%);
+      opacity: 0; transition: opacity .4s; pointer-events: none;
     }
-    .g-item:hover .g-overlay { opacity: 1; }
-    .g-cat {
-      font-family: var(--sans); font-size: .58rem;
-      letter-spacing: .2em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: .3rem;
-    }
-    .g-name {
-      font-family: var(--round); font-size: 1rem;
-      font-weight: 700; color: var(--cream);
-    }
+    .g-item:hover .g-shine { opacity: 1; }
     .g-expand {
-      position: absolute; top: .875rem; right: .875rem;
-      width: 34px; height: 34px;
-      border: 1.5px solid rgba(240,237,230,.35);
+      position: absolute; top: .75rem; right: .75rem;
+      width: 36px; height: 36px;
+      border: 1.5px solid rgba(240,237,230,.3);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      background: rgba(61,57,53,.5); backdrop-filter: blur(4px);
-      opacity: 0; transform: scale(.7);
-      transition: opacity .3s, transform .35s var(--spring);
+      background: rgba(30,28,26,.52); backdrop-filter: blur(8px);
+      opacity: 0; transform: scale(.65);
+      transition: opacity .3s, transform .35s var(--spring), border-color .25s;
     }
     .g-item:hover .g-expand { opacity: 1; transform: scale(1); }
+    .g-expand:hover { border-color: rgba(235,180,120,.8); }
     .g-expand svg { width: 13px; height: 13px; stroke: var(--cream); fill: none; }
+    @media (hover: none) { .g-expand { opacity: 1; transform: scale(1); } }
     .gallery-more { display: flex; justify-content: center; margin-top: 2.5rem; }
 
     /* ─── ABOUT ──────────────────────────────────── */
@@ -663,24 +673,43 @@
     /* ─── LIGHTBOX ───────────────────────────────── */
     .lb {
       position: fixed; inset: 0; z-index: 2000;
-      background: rgba(61,57,53,.97);
+      background: rgba(20,18,16,.96);
       display: flex; align-items: center; justify-content: center;
       opacity: 0; pointer-events: none; transition: opacity .3s;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(18px);
     }
     .lb.on { opacity: 1; pointer-events: auto; }
     .lb-close {
-      position: absolute; top: 1.5rem; right: 1.5rem;
+      position: absolute; top: 1.25rem; right: 1.25rem;
       width: 42px; height: 42px;
       border: 1.5px solid rgba(235,231,223,.15);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      color: rgba(235,231,223,.5); transition: all .25s;
+      color: rgba(235,231,223,.5); transition: all .25s; z-index: 10;
     }
     .lb-close:hover { border-color: var(--accent); color: var(--accent); }
     .lb-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
-    .lb-box { max-width: 72vw; max-height: 82vh; border-radius: 12px; overflow: hidden; }
-    .lb-img { max-width: 100%; max-height: 82vh; object-fit: contain; }
+    .lb-box {
+      max-width: min(86vw, 920px); max-height: 86vh;
+      border-radius: 12px; overflow: hidden; position: relative;
+    }
+    .lb-img { max-width: 100%; max-height: 86vh; object-fit: contain; display: block; }
+    .lb-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 46px; height: 46px;
+      border: 1.5px solid rgba(235,231,223,.15); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(235,231,223,.6); transition: all .25s; z-index: 10;
+    }
+    .lb-nav:hover { border-color: var(--accent); color: var(--accent); background: rgba(235,180,120,.08); }
+    .lb-nav svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+    .lb-prev { right: calc(100% + 1.25rem); }
+    .lb-next { left: calc(100% + 1.25rem); }
+    .lb-counter {
+      position: absolute; bottom: -2.5rem; left: 50%; transform: translateX(-50%);
+      font-family: var(--sans); font-size: .62rem; letter-spacing: .14em;
+      color: rgba(235,231,223,.28); white-space: nowrap;
+    }
 
     /* ─── PROJECT TRACKING ──────────────────────────── */
     .tracking {
@@ -960,6 +989,9 @@
 
       /* Gallery */
       .gallery-grid { columns: 2; }
+      .lb-prev { right: auto; left: .75rem; }
+      .lb-next { left: auto; right: .75rem; }
+      .lb-nav { background: rgba(20,18,16,.6); backdrop-filter: blur(8px); }
 
       /* Stats */
       .stats { grid-template-columns: 1fr; }
@@ -978,11 +1010,16 @@
       .hero-left { gap: .875rem; }
       .hero-logo-img { width: min(88vw, 280px); }
       .hero-right { display: none; }   /* esconder stats en pantallas muy pequeñas */
-      .gallery-grid { columns: 1; }
       .form-row2 { grid-template-columns: 1fr; }
-      .about-badge { display: none; }  /* evita overflow en teléfonos pequeños */
+      .about-badge { display: none; }
       .nav-logo-img { height: 30px; }
       .btn { padding: .75rem 1.5rem; font-size: .68rem; }
+      .lb-box { max-width: 94vw; max-height: 88vh; border-radius: 8px; }
+      .lb-img { max-height: 88vh; }
+      .lb-counter { bottom: -2rem; font-size: .58rem; }
+    }
+    @media (max-width: 380px) {
+      .gallery-grid { columns: 1; }
     }
   </style>
 </head>
@@ -997,9 +1034,16 @@
   <button class="lb-close" id="lb-close">
     <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
   </button>
-  <div class="lb-box">
+  <button class="lb-nav lb-prev" id="lb-prev">
+    <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="lb-box" id="lb-box">
     <img class="lb-img" id="lb-img" src="" alt="">
+    <div class="lb-counter" id="lb-counter"></div>
   </div>
+  <button class="lb-nav lb-next" id="lb-next">
+    <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+  </button>
 </div>
 
 <!-- NAV -->
@@ -1085,18 +1129,18 @@
 <!-- MARQUEE -->
 <div class="marquee">
   <div class="marquee-track">
-    <span>muebles a medida</span><span class="dot">◆</span>
     <span>cocinas integrales</span><span class="dot">◆</span>
-    <span>puertas artesanales</span><span class="dot">◆</span>
-    <span>decoración en madera</span><span class="dot">◆</span>
-    <span>pisos de madera</span><span class="dot">◆</span>
-    <span>diseño personalizado</span><span class="dot">◆</span>
-    <span>muebles a medida</span><span class="dot">◆</span>
+    <span>centros de entretenimiento</span><span class="dot">◆</span>
+    <span>madera sólida</span><span class="dot">◆</span>
+    <span>diseño a medida</span><span class="dot">◆</span>
+    <span>acabados artesanales</span><span class="dot">◆</span>
+    <span>hecho en Costa Rica</span><span class="dot">◆</span>
     <span>cocinas integrales</span><span class="dot">◆</span>
-    <span>puertas artesanales</span><span class="dot">◆</span>
-    <span>decoración en madera</span><span class="dot">◆</span>
-    <span>pisos de madera</span><span class="dot">◆</span>
-    <span>diseño personalizado</span><span class="dot">◆</span>
+    <span>centros de entretenimiento</span><span class="dot">◆</span>
+    <span>madera sólida</span><span class="dot">◆</span>
+    <span>diseño a medida</span><span class="dot">◆</span>
+    <span>acabados artesanales</span><span class="dot">◆</span>
+    <span>hecho en Costa Rica</span><span class="dot">◆</span>
   </div>
 </div>
 
@@ -1117,12 +1161,13 @@
   <div class="gallery-head">
     <span class="s-label rev">portafolio</span>
     <h2 class="s-title rev" data-d="1">nuestro <em>trabajo</em></h2>
-    <div class="gallery-filters rev" data-d="2">
-      <button class="filt on" data-f="all">todo</button>
-      <button class="filt" data-f="muebles">muebles</button>
-      <button class="filt" data-f="cocinas">cocinas</button>
-      <button class="filt" data-f="puertas">puertas</button>
-      <button class="filt" data-f="decoracion">decoración</button>
+    <div class="gallery-filters-wrap rev" data-d="2">
+      <div class="gallery-filters">
+        <button class="filt on" data-f="all">todo <span class="filt-count">35</span></button>
+        <button class="filt" data-f="cocinas">cocinas <span class="filt-count">20</span></button>
+        <button class="filt" data-f="entretenimiento">entretenimiento <span class="filt-count">9</span></button>
+        <button class="filt" data-f="closet">closet <span class="filt-count">6</span></button>
+      </div>
     </div>
   </div>
   <div class="gallery-grid" id="gg"></div>
@@ -1155,8 +1200,8 @@
   </div>
 
   <div class="about-visual rev" data-d="1">
-    <div class="about-main"></div>
-    <div class="about-accent"></div>
+    <div class="about-main"><img src="images/galeria/cocinas/cocina-damar-t7.jpg" alt="cocina integral cachas house" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
+    <div class="about-accent"><img src="images/galeria/closet/closet-estandar.jpg" alt="closet cachas house" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
     <div class="about-badge">
       <div class="about-badge-n">3<sup style="font-size:.55em;vertical-align:super">+</sup></div>
       <div class="about-badge-l">años de<br>experiencia</div>
@@ -1296,11 +1341,9 @@
       <label class="flbl">tipo de proyecto</label>
       <select class="fsel">
         <option value="" disabled selected>selecciona una opción</option>
-        <option>muebles a medida</option>
         <option>cocina integral</option>
-        <option>puertas</option>
-        <option>decoración</option>
-        <option>pisos de madera</option>
+        <option>centro de entretenimiento</option>
+        <option>closet</option>
         <option>otro</option>
       </select>
     </div>
@@ -1395,48 +1438,84 @@
    Example: img: 'images/mesa-comedor.jpg'
 ───────────────────────────────────────────────────────────────── */
 const ITEMS = [
-  { cat:'muebles',    catLabel:'muebles',    title:'mesa de comedor en roble',     ratio:'4/3',  grad:'linear-gradient(145deg,#c9a06a,#8c5f2e,#5a3510)' },
-  { cat:'cocinas',    catLabel:'cocinas',    title:'cocina integral nogal',        ratio:'3/4',  grad:'linear-gradient(135deg,#b88a50,#7a4e22,#4a2e0c)' },
-  { cat:'muebles',    catLabel:'muebles',    title:'sillón de madera maciza',      ratio:'4/3',  grad:'linear-gradient(160deg,#d4a86e,#9c6830,#5c350e)' },
-  { cat:'puertas',    catLabel:'puertas',    title:'puerta principal cedro',       ratio:'3/4',  grad:'linear-gradient(180deg,#c49458,#8a5a24,#543210)' },
-  { cat:'decoracion', catLabel:'decoración', title:'estantería flotante',          ratio:'16/9', grad:'linear-gradient(120deg,#be9660,#845a28,#523014)' },
-  { cat:'muebles',    catLabel:'muebles',    title:'cama con cabecero en roble',   ratio:'4/3',  grad:'linear-gradient(155deg,#c8a060,#8c6228,#56320c)' },
-  { cat:'cocinas',    catLabel:'cocinas',    title:'alacena rústica pino',         ratio:'3/4',  grad:'linear-gradient(140deg,#c09458,#7e5520,#4e2c0a)' },
-  { cat:'puertas',    catLabel:'puertas',    title:'puerta corredera pino macizo', ratio:'4/3',  grad:'linear-gradient(165deg,#caa264,#8e6030,#583414)' },
-  { cat:'decoracion', catLabel:'decoración', title:'marco artesanal roble',        ratio:'1/1',  grad:'linear-gradient(130deg,#b88c54,#7c5020,#4c2c0c)'  },
+  /* ── COCINAS ─────────────────────────────────────── */
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina campestre',             img:'images/galeria/cocinas/cocina-campestre.jpg',          ratio:'3/4'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Damar T7',              img:'images/galeria/cocinas/cocina-damar-t7.jpg',           ratio:'3/4'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Damar T7 · ángulo',     img:'images/galeria/cocinas/cocina-damar-t7-2.jpg',         ratio:'3/4'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Damar T8',              img:'images/galeria/cocinas/cocina-damar-t8.jpg',           ratio:'4/3'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Damar T8 · detalle',    img:'images/galeria/cocinas/cocina-damar-t8-2.jpg',         ratio:'4/3'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Daniel Lemetre',        img:'images/galeria/cocinas/cocina-daniel-lemetre-1.jpg',   ratio:'4/3'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Daniel Lemetre · vista',img:'images/galeria/cocinas/cocina-daniel-lemetre-2.jpg',   ratio:'4/3'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Daniel Lemetre · acabados', img:'images/galeria/cocinas/cocina-daniel-lemetre-3.jpg', ratio:'3/4' },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina lineal',                img:'images/galeria/cocinas/cocina-lineal-1.jpg',           ratio:'3/4'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina lineal · isla',         img:'images/galeria/cocinas/cocina-lineal-2.jpg',           ratio:'1/1'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Manga',                 img:'images/galeria/cocinas/cocina-manga-1.jpg',            ratio:'4/3'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Manga · detalle',       img:'images/galeria/cocinas/cocina-manga-2.jpg',            ratio:'4/3'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Prado Verde',           img:'images/galeria/cocinas/cocina-prado-verde.jpg',        ratio:'4/3'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Serena del Mar',        img:'images/galeria/cocinas/cocina-serena-mar-1.jpg',       ratio:'4/3'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Serena del Mar · perfil',img:'images/galeria/cocinas/cocina-serena-mar-2.jpg',     ratio:'3/4'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Serena del Mar · acabados',img:'images/galeria/cocinas/cocina-serena-mar-3.jpg',   ratio:'3/4'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Territorio Mío',        img:'images/galeria/cocinas/cocina-territorio-mio.jpg',     ratio:'4/3'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Turbaco',               img:'images/galeria/cocinas/cocina-turbaco-1.jpg',          ratio:'1/1'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Turbaco · isla',        img:'images/galeria/cocinas/cocina-turbaco-2.jpg',          ratio:'1/1'  },
+  { cat:'cocinas', catLabel:'cocinas', title:'cocina Turbaco · acabados',    img:'images/galeria/cocinas/cocina-turbaco-3.jpg',          ratio:'1/1'  },
+
+  /* ── ENTRETENIMIENTO ─────────────────────────────── */
+  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro de entretenimiento',          img:'images/galeria/entretenimiento/mueble-tv-1.jpg',        ratio:'4/3' },
+  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · detalle',                img:'images/galeria/entretenimiento/mueble-tv-2.jpg',        ratio:'4/3' },
+  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV flotante',                 img:'images/galeria/entretenimiento/mueble-tv-5.jpg',        ratio:'4/3' },
+  { cat:'entretenimiento', catLabel:'entretenimiento', title:'mueble TV moderno',                  img:'images/galeria/entretenimiento/mueble-tv-6.jpg',        ratio:'1/1' },
+  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · Barranquilla',           img:'images/galeria/entretenimiento/tv-baranquilla.jpg',     ratio:'4/3' },
+  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV campestre',                img:'images/galeria/entretenimiento/tv-campestre.jpg',       ratio:'4/3' },
+  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · Ciudad Jardín',          img:'images/galeria/entretenimiento/tv-ciudad-jardin.jpg',   ratio:'4/3' },
+  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · Territorio Mío',         img:'images/galeria/entretenimiento/tv-territorio-mio.jpg',  ratio:'4/3' },
+  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · acabados',               img:'images/galeria/entretenimiento/tv-territorio-mio-2.jpg',ratio:'1/1' },
+
+  /* ── CLOSET ──────────────────────────────────────── */
+  { cat:'closet', catLabel:'closet', title:'closet Territorio Mío',          img:'images/galeria/closet/closet-territorio-mio.jpg',      ratio:'4/3' },
+  { cat:'closet', catLabel:'closet', title:'closet Territorio Mío · interior',img:'images/galeria/closet/closet-2-territorio-mio.jpg',   ratio:'4/3' },
+  { cat:'closet', catLabel:'closet', title:'closet en U',                    img:'images/galeria/closet/closet-en-u.jpg',                ratio:'4/3' },
+  { cat:'closet', catLabel:'closet', title:'closet en U · detalle',          img:'images/galeria/closet/closet-2-en-u.jpg',              ratio:'4/3' },
+  { cat:'closet', catLabel:'closet', title:'closet estándar',                img:'images/galeria/closet/closet-estandar.jpg',            ratio:'4/3' },
+  { cat:'closet', catLabel:'closet', title:'closet estándar · interior',     img:'images/galeria/closet/closet-2-estandar.jpg',          ratio:'4/3' },
 ];
 
 const gg = document.getElementById('gg');
+
+let visibleItems = [];
+let lbCurrentIdx = 0;
 
 function buildItem(item, idx) {
   const el = document.createElement('div');
   el.className = 'g-item rev';
   el.dataset.cat = item.cat;
   el.dataset.d   = (idx % 3) + 1;
+  const media = item.img
+    ? `<img src="${item.img}" alt="${item.catLabel}" loading="lazy">`
+    : `<div class="g-img-inner" style="background:${item.grad}"></div>`;
   el.innerHTML = `
     <div class="g-img" style="aspect-ratio:${item.ratio}">
-      <div class="g-img-inner" style="background:${item.grad}"></div>
-      <div class="g-overlay">
-        <span class="g-cat">${item.catLabel}</span>
-        <span class="g-name">${item.title}</span>
-      </div>
+      ${media}
+      <span class="g-chip">${item.catLabel}</span>
+      <div class="g-shine"></div>
       <button class="g-expand" aria-label="Ampliar">
         <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
           <path d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/>
         </svg>
       </button>
     </div>`;
-  el.querySelector('.g-expand').addEventListener('click', () => openLb(item.grad));
+  el.addEventListener('click', () => openLbIdx(idx));
+  el.querySelector('.g-expand').addEventListener('click', e => { e.stopPropagation(); openLbIdx(idx); });
   return el;
 }
 
 function renderGallery(filter = 'all') {
   gg.innerHTML = '';
-  const list = filter === 'all' ? ITEMS : ITEMS.filter(i => i.cat === filter);
-  list.forEach((item, i) => {
+  visibleItems = filter === 'all' ? ITEMS : ITEMS.filter(i => i.cat === filter);
+  visibleItems.forEach((item, i) => {
     const el = buildItem(item, i);
     gg.appendChild(el);
-    setTimeout(() => el.classList.add('in'), i * 65);
+    setTimeout(() => el.classList.add('in'), i * 50);
   });
   observe();
 }
@@ -1519,19 +1598,40 @@ mob.querySelectorAll('a').forEach(a => {
 
 /* ─── LIGHTBOX ─────────────────────────────────── */
 const lb = document.getElementById('lb');
-function openLb(grad) {
-  const c = document.createElement('canvas');
-  c.width = 900; c.height = 600;
-  const ctx = c.getContext('2d');
-  const g = ctx.createLinearGradient(0, 0, 900, 600);
-  g.addColorStop(0, '#c9a06a'); g.addColorStop(.5, '#8c5f2e'); g.addColorStop(1, '#5a3510');
-  ctx.fillStyle = g; ctx.fillRect(0,0,900,600);
-  document.getElementById('lb-img').src = c.toDataURL();
+function openLbIdx(idx) {
+  lbCurrentIdx = idx;
+  const item = visibleItems[idx];
+  if (!item) return;
+  const lbImg = document.getElementById('lb-img');
+  const lbCounter = document.getElementById('lb-counter');
+  lbImg.src = item.img || '';
+  lbCounter.textContent = `${idx + 1} / ${visibleItems.length}`;
   lb.classList.add('on');
 }
-document.getElementById('lb-close').addEventListener('click', () => lb.classList.remove('on'));
-lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('on'); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+function lbStep(dir) {
+  const next = (lbCurrentIdx + dir + visibleItems.length) % visibleItems.length;
+  openLbIdx(next);
+}
+function closeLb() { lb.classList.remove('on'); }
+
+document.getElementById('lb-close').addEventListener('click', closeLb);
+document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); lbStep(-1); });
+document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); lbStep(1); });
+lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
+document.addEventListener('keydown', e => {
+  if (!lb.classList.contains('on')) return;
+  if (e.key === 'Escape') closeLb();
+  if (e.key === 'ArrowLeft')  lbStep(-1);
+  if (e.key === 'ArrowRight') lbStep(1);
+});
+
+/* swipe support */
+let lbTouchX = 0;
+lb.addEventListener('touchstart', e => { lbTouchX = e.touches[0].clientX; }, { passive: true });
+lb.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - lbTouchX;
+  if (Math.abs(dx) > 50) lbStep(dx < 0 ? 1 : -1);
+}, { passive: true });
 
 /* ─── PROJECT TRACKING ─────────────────────────── */
 (function() {
