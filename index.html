@@ -193,28 +193,60 @@
       position: relative; height: 100svh; min-height: 640px;
       display: flex; align-items: center;
       padding: var(--navh) clamp(1.5rem,7vw,7rem) 0;
-      overflow: hidden; background: var(--dark);
+      overflow: hidden; background: #100d09;
+    }
+    /* Parallax photo layers */
+    .hpx-bg {
+      position: absolute; inset: 0; z-index: 0;
+    }
+    .hpx-layer {
+      position: absolute; inset: -12%;
+      will-change: transform;
+      transition: transform 1s cubic-bezier(.15,0,0,1);
+    }
+    .hpx-layer img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .hpx-layer-1 img {
+      filter: saturate(.55) brightness(.38);
+    }
+    .hpx-layer-2 img {
+      filter: saturate(.4) brightness(.22);
+      mix-blend-mode: luminosity;
+    }
+    .hpx-overlay {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(to right,  rgba(10,8,6,.78) 0%, rgba(10,8,6,.35) 55%, rgba(10,8,6,.6) 100%),
+        linear-gradient(to bottom, rgba(10,8,6,.6)  0%, rgba(10,8,6,.1) 40%, rgba(10,8,6,.7) 100%);
     }
     /* Subtle warm grain on hero */
     .hero::before {
       content: '';
-      position: absolute; inset: 0; z-index: 0;
+      position: absolute; inset: 0; z-index: 2;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
-      opacity: .6; mix-blend-mode: overlay;
+      opacity: .7; mix-blend-mode: overlay; pointer-events: none;
     }
     /* Radial warm glow */
     .hero::after {
       content: '';
       position: absolute; top: 0; right: 0;
-      width: 60%; height: 100%;
-      background: radial-gradient(ellipse at 80% 35%, rgba(235,180,120,.08) 0%, transparent 60%);
-      z-index: 0;
+      width: 60%; height: 100%; z-index: 2;
+      background: radial-gradient(ellipse at 75% 40%, rgba(235,180,120,.11) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    /* Vignette bottom */
+    .hero-vignette {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 30%;
+      background: linear-gradient(to top, rgba(10,8,6,.9) 0%, transparent 100%);
+      z-index: 1; pointer-events: none;
     }
     .hero-inner {
-      position: relative; z-index: 1;
+      position: relative; z-index: 3;
       display: grid; grid-template-columns: 1fr auto;
       align-items: center; gap: 3rem; width: 100%;
     }
+    .hero-scroll { z-index: 3; }
     .hero-left { display: flex; flex-direction: column; gap: 2rem; }
 
     /* Big hero logo */
@@ -1086,6 +1118,19 @@
 
 <!-- ═══════════════ HERO ═══════════════ -->
 <section class="hero" id="inicio">
+
+  <!-- Parallax photo background -->
+  <div class="hpx-bg" id="hpx-bg">
+    <div class="hpx-layer hpx-layer-1" data-depth="0.28">
+      <img src="images/galeria/cocinas/cocina-serena-mar-1.jpg" alt="" aria-hidden="true">
+    </div>
+    <div class="hpx-layer hpx-layer-2" data-depth="0.14">
+      <img src="images/galeria/cocinas/cocina-territorio-mio.jpg" alt="" aria-hidden="true">
+    </div>
+    <div class="hpx-overlay"></div>
+  </div>
+  <div class="hero-vignette"></div>
+
   <div class="hero-inner">
     <div class="hero-left">
 
@@ -1529,6 +1574,38 @@ const HERO_IMGS = [
     label.textContent = HERO_IMGS[hIdx].label;
   }
   setInterval(heroNext, 5000);
+})();
+
+/* ─── HERO PARALLAX ─────────────────────────────── */
+(function() {
+  const hero  = document.getElementById('inicio');
+  const layers = hero ? hero.querySelectorAll('.hpx-layer') : [];
+  if (!layers.length || window.matchMedia('(hover:none)').matches) return;
+
+  let tX = 0, tY = 0, cX = 0, cY = 0, raf = 0;
+
+  document.addEventListener('mousemove', e => {
+    const r = hero.getBoundingClientRect();
+    tX = (e.clientX - r.left  - r.width  / 2) / r.width;
+    tY = (e.clientY - r.top   - r.height / 2) / r.height;
+    if (!raf) raf = requestAnimationFrame(tick);
+  });
+
+  function tick() {
+    raf = 0;
+    cX += (tX - cX) * 0.07;
+    cY += (tY - cY) * 0.07;
+    layers.forEach(l => {
+      const d = parseFloat(l.dataset.depth) || 0.2;
+      l.style.transform = `translate3d(${cX * d * 72}px, ${cY * d * 52}px, 0)`;
+    });
+    if (Math.abs(tX - cX) > 0.001 || Math.abs(tY - cY) > 0.001) {
+      raf = requestAnimationFrame(tick);
+    }
+  }
+
+  /* also reset when mouse leaves hero */
+  hero.addEventListener('mouseleave', () => { tX = 0; tY = 0; if (!raf) raf = requestAnimationFrame(tick); });
 })();
 
 /* ─── GALLERY CAROUSEL ──────────────────────────── */
