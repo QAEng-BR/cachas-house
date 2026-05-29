@@ -471,7 +471,34 @@
     .gallery {
       padding: clamp(3.5rem,7vw,7rem) clamp(1rem,4vw,4rem);
       background: var(--surf);
+      position: relative;
     }
+
+    /* ── KITCHEN ANIMATION INTRO ────────────────── */
+    .gal-intro {
+      position: absolute; inset: 0; z-index: 20;
+      background: var(--surf);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1.5rem;
+      pointer-events: none;
+      transition: opacity .8s ease;
+    }
+    .gal-intro.hidden { opacity: 0; pointer-events: none; }
+    .gal-intro.gone   { display: none; }
+    .ki-canvas {
+      width: min(700px, 90vw); height: min(340px, 44vw);
+      border-radius: 14px;
+    }
+    .ki-label {
+      font-family: var(--sans); font-size: .72rem; font-weight: 500;
+      letter-spacing: .16em; text-transform: uppercase;
+      color: var(--muted); text-align: center;
+    }
+    .gallery-content {
+      opacity: 0; transition: opacity .8s ease;
+    }
+    .gallery-content.visible { opacity: 1; }
     .gallery-head {
       margin-bottom: 2.5rem;
       display: flex; flex-direction: column; gap: 1rem;
@@ -1202,36 +1229,42 @@
 
 <!-- ═══════════════ GALLERY ═══════════════ -->
 <section class="gallery" id="galeria">
-  <div class="gallery-head">
-    <span class="s-label rev">portafolio</span>
-    <h2 class="s-title rev" data-d="1">nuestro <em>trabajo</em></h2>
-    <div class="gallery-filters-wrap rev" data-d="2">
-      <div class="gallery-filters">
-        <button class="filt on" data-f="all">todo <span class="filt-count">35</span></button>
-        <button class="filt" data-f="cocinas">cocinas <span class="filt-count">20</span></button>
-        <button class="filt" data-f="entretenimiento">entretenimiento <span class="filt-count">9</span></button>
-        <button class="filt" data-f="closet">closet <span class="filt-count">6</span></button>
+  <div class="gal-intro" id="gal-intro">
+    <canvas class="ki-canvas" id="ki-canvas"></canvas>
+    <p class="ki-label" id="ki-label">armando tu cocina…</p>
+  </div>
+  <div class="gallery-content" id="gallery-content">
+    <div class="gallery-head">
+      <span class="s-label rev">portafolio</span>
+      <h2 class="s-title rev" data-d="1">nuestro <em>trabajo</em></h2>
+      <div class="gallery-filters-wrap rev" data-d="2">
+        <div class="gallery-filters">
+          <button class="filt on" data-f="all">todo <span class="filt-count">35</span></button>
+          <button class="filt" data-f="cocinas">cocinas <span class="filt-count">20</span></button>
+          <button class="filt" data-f="entretenimiento">entretenimiento <span class="filt-count">9</span></button>
+          <button class="filt" data-f="closet">closet <span class="filt-count">6</span></button>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="gcar rev" data-d="3">
-    <div class="gcar-track" id="gcar-track">
-      <!-- slides injected by JS -->
+    <div class="gcar rev" data-d="3">
+      <div class="gcar-track" id="gcar-track">
+        <!-- slides injected by JS -->
+      </div>
+      <div class="gcar-progress"><div class="gcar-bar" id="gcar-bar"></div></div>
+      <button class="gcar-nav gcar-prev" id="gcar-prev">
+        <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button class="gcar-nav gcar-next" id="gcar-next">
+        <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <span class="gcar-chip" id="gcar-chip"></span>
+      <button class="gcar-expand" id="gcar-expand" aria-label="Ampliar">
+        <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/>
+        </svg>
+      </button>
+      <span class="gcar-counter" id="gcar-counter"></span>
     </div>
-    <div class="gcar-progress"><div class="gcar-bar" id="gcar-bar"></div></div>
-    <button class="gcar-nav gcar-prev" id="gcar-prev">
-      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
-    </button>
-    <button class="gcar-nav gcar-next" id="gcar-next">
-      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
-    </button>
-    <span class="gcar-chip" id="gcar-chip"></span>
-    <button class="gcar-expand" id="gcar-expand" aria-label="Ampliar">
-      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
-        <path d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/>
-      </svg>
-    </button>
-    <span class="gcar-counter" id="gcar-counter"></span>
   </div>
 </section>
 
@@ -2007,6 +2040,275 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
   btn.disabled = true;
   /* TODO: integrar Formspree / EmailJS / backend real */
 });
+
+/* ─── KITCHEN ASSEMBLY ANIMATION ───────────────── */
+(function() {
+  const galIntro   = document.getElementById('gal-intro');
+  const galContent = document.getElementById('gallery-content');
+  const kiCanvas   = document.getElementById('ki-canvas');
+  const kiLabel    = document.getElementById('ki-label');
+  if (!galIntro || !kiCanvas) return;
+
+  const SESSION_KEY = 'ki_played';
+
+  function revealGallery() {
+    galIntro.classList.add('hidden');
+    galContent.classList.add('visible');
+    setTimeout(() => { galIntro.classList.add('gone'); }, 850);
+  }
+
+  /* If already played this session, skip animation */
+  if (sessionStorage.getItem(SESSION_KEY)) {
+    galIntro.classList.add('gone');
+    galContent.classList.add('visible');
+    return;
+  }
+
+  let animationTriggered = false;
+
+  function runAnimation() {
+    if (animationTriggered) return;
+    animationTriggered = true;
+
+    /* Dynamically load Three.js then run the scene */
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js';
+    s.onload = buildScene;
+    s.onerror = revealGallery; /* fallback if CDN fails */
+    document.head.appendChild(s);
+  }
+
+  function buildScene() {
+    const THREE = window.THREE;
+    if (!THREE) { revealGallery(); return; }
+
+    /* ── Scene setup ── */
+    const W = kiCanvas.clientWidth  || 700;
+    const H = kiCanvas.clientHeight || 340;
+    kiCanvas.width  = W;
+    kiCanvas.height = H;
+
+    const renderer = new THREE.WebGLRenderer({ canvas: kiCanvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(W, H);
+    renderer.setClearColor(0xF8F5EF, 1); /* --surf */
+    renderer.shadowMap.enabled = true;
+
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 50);
+    camera.position.set(4.8, 3.8, 5.5);
+    camera.lookAt(0, -0.3, 0);
+
+    /* ── Lights ── */
+    scene.add(new THREE.AmbientLight(0xfff4e8, 0.7));
+    const sun = new THREE.DirectionalLight(0xffeedd, 1.4);
+    sun.position.set(4, 6, 4);
+    sun.castShadow = true;
+    scene.add(sun);
+    const fill = new THREE.DirectionalLight(0xd0c8c0, 0.4);
+    fill.position.set(-3, 2, -2);
+    scene.add(fill);
+
+    /* ── Floor ── */
+    const floorGeo = new THREE.PlaneGeometry(8, 5);
+    const floorMat = new THREE.MeshLambertMaterial({ color: 0xE4DED4 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -1.35;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    /* ── Material helpers ── */
+    const WOOD_FRONT  = 0x8c5f2e;
+    const WOOD_TOP    = 0xc9a06a;
+    const WOOD_SIDE   = 0x5a3510;
+    const HANDLE_COL  = 0xEBB478;
+    const WALL_COL    = 0xEBE7DF;
+
+    function cabinetMats(front, top, side) {
+      return [
+        new THREE.MeshLambertMaterial({ color: side }),  /* right */
+        new THREE.MeshLambertMaterial({ color: side }),  /* left  */
+        new THREE.MeshLambertMaterial({ color: top }),   /* top   */
+        new THREE.MeshLambertMaterial({ color: side }),  /* bot   */
+        new THREE.MeshLambertMaterial({ color: front }), /* front */
+        new THREE.MeshLambertMaterial({ color: side }),  /* back  */
+      ];
+    }
+
+    /* ── Geometry factory ── */
+    function makeBox(w, h, d, mats) {
+      const geo  = new THREE.BoxGeometry(w, h, d);
+      const mesh = new THREE.Mesh(geo, mats);
+      mesh.castShadow    = true;
+      mesh.receiveShadow = true;
+      return mesh;
+    }
+
+    /* ── Handle ── */
+    function addHandle(parent, w, h) {
+      const hgeo = new THREE.CylinderGeometry(0.025, 0.025, w * 0.38, 8);
+      const hmat = new THREE.MeshLambertMaterial({ color: HANDLE_COL });
+      const handle = new THREE.Mesh(hgeo, hmat);
+      handle.rotation.z = Math.PI / 2;
+      handle.position.set(0, -h * 0.14, 0.31);
+      handle.castShadow = true;
+      parent.add(handle);
+      return handle;
+    }
+
+    /* ── Dimensions ── */
+    const FLOOR = -1.35;
+    const BW = 1.0, BH = 0.78, BD = 0.58;
+    const CW = 3.14, CH = 0.07, CD = 0.62;
+    const UW = 1.0,  UH = 0.58, UD = 0.40;
+    const baseY   = FLOOR + BH / 2;
+    const countY  = FLOOR + BH + CH / 2;
+    const upperY  = countY + CH / 2 + 0.40 + UH / 2;
+    const XS      = [-1.07, 0, 1.07];
+
+    /* ── Build objects (start above view for drop animation) ── */
+    const DROP_FROM = baseY + 4.0;
+    const UPPER_DROP_FROM = upperY + 4.0;
+
+    /* Base cabinets */
+    const baseCabs = XS.map(x => {
+      const m = makeBox(BW, BH, BD, cabinetMats(WOOD_FRONT, WOOD_TOP, WOOD_SIDE));
+      m.position.set(x, DROP_FROM, 0);
+      addHandle(m, BW, BH);
+      scene.add(m);
+      return m;
+    });
+
+    /* Countertop (starts off right) */
+    const counter = makeBox(CW, CH, CD, cabinetMats(WOOD_SIDE, WOOD_TOP, WOOD_SIDE));
+    counter.position.set(5, countY, 0);
+    scene.add(counter);
+
+    /* Upper cabinets */
+    const upperCabs = XS.map(x => {
+      const m = makeBox(UW, UH, UD, cabinetMats(WOOD_FRONT, WOOD_TOP, WOOD_SIDE));
+      m.position.set(x, UPPER_DROP_FROM, 0);
+      addHandle(m, UW, UH);
+      scene.add(m);
+      return m;
+    });
+
+    /* Wall panel behind upper cabs */
+    const wall = makeBox(CW + 0.1, UH + 0.12, 0.06, [
+      new THREE.MeshLambertMaterial({ color: WALL_COL }),
+      new THREE.MeshLambertMaterial({ color: WALL_COL }),
+      new THREE.MeshLambertMaterial({ color: WALL_COL }),
+      new THREE.MeshLambertMaterial({ color: WALL_COL }),
+      new THREE.MeshLambertMaterial({ color: WALL_COL }),
+      new THREE.MeshLambertMaterial({ color: WALL_COL }),
+    ]);
+    wall.position.set(0, upperY, -UD / 2 - 0.04);
+    wall.visible = false;
+    scene.add(wall);
+
+    /* ── Easing functions ── */
+    function easeOutBack(t) {
+      const c1 = 1.70158, c3 = c1 + 1;
+      return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+    }
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+    function easeInOutQuad(t) { return t < 0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+
+    /* ── Animation timeline ── */
+    const T0 = performance.now();
+    const steps = [
+      /* Base cabinets drop */
+      { mesh: baseCabs[0], startT: 0,    dur: 520, fromY: DROP_FROM,       toY: baseY,  ease: easeOutBack },
+      { mesh: baseCabs[1], startT: 180,  dur: 520, fromY: DROP_FROM,       toY: baseY,  ease: easeOutBack },
+      { mesh: baseCabs[2], startT: 360,  dur: 520, fromY: DROP_FROM,       toY: baseY,  ease: easeOutBack },
+      /* Countertop slides in from right */
+      { mesh: counter,     startT: 950,  dur: 600, fromX: 5,               toX: 0,      ease: easeOutCubic },
+      /* Upper cabinets drop */
+      { mesh: upperCabs[0],startT: 1650, dur: 480, fromY: UPPER_DROP_FROM, toY: upperY, ease: easeOutBack },
+      { mesh: upperCabs[1],startT: 1850, dur: 480, fromY: UPPER_DROP_FROM, toY: upperY, ease: easeOutBack },
+      { mesh: upperCabs[2],startT: 2050, dur: 480, fromY: UPPER_DROP_FROM, toY: upperY, ease: easeOutBack },
+    ];
+
+    /* Handles start invisible (pop in) */
+    baseCabs.forEach(c => { c.children.forEach(h => { h.scale.setScalar(0); }); });
+    upperCabs.forEach(c => { c.children.forEach(h => { h.scale.setScalar(0); }); });
+
+    let wallShown = false;
+    let doneAt = null;
+    const FADE_DELAY = 800;
+
+    function animTick(now) {
+      const elapsed = now - T0;
+      let allSettled = true;
+
+      steps.forEach(step => {
+        const t = Math.max(0, Math.min(1, (elapsed - step.startT) / step.dur));
+        if (t < 1) allSettled = false;
+        const p = step.ease(t);
+
+        if (step.fromY !== undefined) {
+          step.mesh.position.y = step.fromY + (step.toY - step.fromY) * p;
+        }
+        if (step.fromX !== undefined) {
+          step.mesh.position.x = step.fromX + (step.toX - step.fromX) * p;
+        }
+      });
+
+      /* Wall panel appears when upper cabs land */
+      if (!wallShown && elapsed > 2550) {
+        wallShown = true;
+        wall.visible = true;
+      }
+
+      /* Handles pop in */
+      const handleT = Math.max(0, Math.min(1, (elapsed - 2650) / 300));
+      const handleScale = easeOutBack(handleT);
+      [...baseCabs, ...upperCabs].forEach(c => {
+        c.children.forEach(h => { h.scale.setScalar(handleScale); });
+      });
+
+      /* Ambient glow pulse when done */
+      if (elapsed > 3100) {
+        const pulse = 0.7 + 0.3 * Math.sin((elapsed - 3100) * 0.003);
+        scene.children.forEach(c => { if (c.isDirectionalLight && c === fill) c.intensity = pulse * 0.5; });
+      }
+
+      /* Label update */
+      if (elapsed < 950)        kiLabel.textContent = 'colocando muebles base…';
+      else if (elapsed < 1650)  kiLabel.textContent = 'instalando encimera…';
+      else if (elapsed < 2650)  kiLabel.textContent = 'montando gabinetes altos…';
+      else if (elapsed < 3100)  kiLabel.textContent = 'terminando detalles…';
+      else                      kiLabel.textContent = '¡lista tu cocina!';
+
+      renderer.render(scene, camera);
+
+      /* Start fade-out after all settled + brief pause */
+      if (allSettled && elapsed > 3200) {
+        if (!doneAt) doneAt = now;
+        if (now - doneAt > FADE_DELAY) {
+          sessionStorage.setItem(SESSION_KEY, '1');
+          revealGallery();
+          return; /* stop RAF */
+        }
+      }
+
+      requestAnimationFrame(animTick);
+    }
+
+    requestAnimationFrame(animTick);
+  }
+
+  /* ── Trigger on scroll into view (once) ── */
+  const galSection = document.getElementById('galeria');
+  const io = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      io.disconnect();
+      runAnimation();
+    }
+  }, { threshold: 0.25 });
+  io.observe(galSection);
+})();
 </script>
 </body>
 </html>
