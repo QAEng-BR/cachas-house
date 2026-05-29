@@ -2058,16 +2058,23 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
   const kiLabel    = document.getElementById('ki-label');
   if (!galIntro || !kiCanvas) return;
 
-  const SESSION_KEY = 'ki_played_v3';
+  const SESSION_KEY = 'ki_played_v4';
 
+  let revealed = false;
   function revealGallery() {
+    if (revealed) return;
+    revealed = true;
     galIntro.classList.add('hidden');
     galContent.classList.add('visible');
     setTimeout(() => { galIntro.classList.add('gone'); }, 850);
   }
 
+  /* Failsafe: always reveal gallery after 9s no matter what */
+  const failsafe = setTimeout(revealGallery, 9000);
+
   /* If already played this session, skip animation */
   if (sessionStorage.getItem(SESSION_KEY)) {
+    clearTimeout(failsafe);
     galIntro.classList.add('gone');
     galContent.classList.add('visible');
     return;
@@ -2083,11 +2090,12 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js';
     s.onload = buildScene;
-    s.onerror = revealGallery; /* fallback if CDN fails */
+    s.onerror = revealGallery;
     document.head.appendChild(s);
   }
 
   function buildScene() {
+    try {
     const THREE = window.THREE;
     if (!THREE) { revealGallery(); return; }
 
@@ -2115,7 +2123,9 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
     sun.position.set(2, 6, 5);
     sun.castShadow = true;
     scene.add(sun);
-    scene.add(Object.assign(new THREE.DirectionalLight(0xd4e8f0, 0.35), { position: new THREE.Vector3(-4, 3, -2) }));
+    const rim = new THREE.DirectionalLight(0xd4e8f0, 0.35);
+    rim.position.set(-4, 3, -2);
+    scene.add(rim);
 
     const underLights = [-1.07, 0, 1.07].map(x => {
       const pl = new THREE.PointLight(0xFFD080, 0, 1.8);
@@ -2350,6 +2360,7 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
     }
 
     requestAnimationFrame(animTick);
+    } catch(e) { revealGallery(); }
   }
 
   /* ── Trigger on scroll into view (once) ── */
@@ -2359,7 +2370,7 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
       io.disconnect();
       runAnimation();
     }
-  }, { threshold: 0.25 });
+  }, { threshold: 0.1 });
   io.observe(galSection);
 })();
 </script>
