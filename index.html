@@ -262,31 +262,56 @@
       animation: fadeup .8s var(--easeout) 1.15s forwards;
     }
 
-    /* Hero right stats card */
-    .hero-right {
-      display: flex; flex-direction: column; gap: 1px;
+    /* Hero right — image showcase */
+    .hero-imgshow {
+      position: relative; flex-shrink: 0;
       opacity: 0; animation: fadeup 1s var(--easeout) .9s forwards;
     }
-    .hero-stat-card {
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.07);
-      padding: 1.5rem 2rem; min-width: 180px;
-      transition: background .3s;
+    .hero-imgshow::before,
+    .hero-imgshow::after {
+      content: ''; position: absolute; inset: 0;
+      border-radius: 22px; pointer-events: none;
     }
-    .hero-stat-card:first-child { border-radius: 10px 10px 0 0; }
-    .hero-stat-card:last-child  { border-radius: 0 0 10px 10px; }
-    .hero-stat-card:hover { background: rgba(255,255,255,.07); }
-    .hero-stat-n {
-      font-family: var(--round); font-weight: 900;
-      font-size: 2.4rem; line-height: 1;
-      color: var(--cream); letter-spacing: -.02em;
+    .hero-imgshow::before {
+      transform: rotate(4deg) translate(10px, 8px);
+      background: rgba(235,180,120,.13); z-index: 0;
     }
-    .hero-stat-n b { color: var(--accent); font-weight: 900; }
-    .hero-stat-l {
-      font-size: .68rem; letter-spacing: .15em;
-      text-transform: uppercase; color: rgba(235,231,223,.4);
-      margin-top: .3rem;
+    .hero-imgshow::after {
+      transform: rotate(-2.5deg) translate(-8px, 5px);
+      background: rgba(84,79,75,.22); z-index: 0;
     }
+    .hero-imgshow-card {
+      position: relative; width: 270px; aspect-ratio: 3/4;
+      border-radius: 22px; overflow: hidden; z-index: 1;
+      box-shadow: 0 28px 72px rgba(0,0,0,.45);
+    }
+    .hero-imgshow-slide {
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity 1.4s ease;
+    }
+    .hero-imgshow-slide.on { opacity: 1; }
+    .hero-imgshow-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-imgshow-foot {
+      position: absolute; bottom: 0; inset-x: 0;
+      padding: 2.5rem 1.1rem 1.1rem;
+      background: linear-gradient(to top, rgba(0,0,0,.72) 0%, transparent 100%);
+      z-index: 2; pointer-events: none; left: 0; right: 0;
+    }
+    .hero-imgshow-label {
+      font-family: var(--sans); font-size: .55rem; font-weight: 600;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: rgba(240,237,230,.55);
+    }
+    .hero-imgshow-dots {
+      display: flex; gap: .35rem; margin-top: .75rem; position: relative; z-index: 2;
+      padding: 0 1.1rem 1.1rem;
+    }
+    .hero-imgshow-dot {
+      height: 3px; border-radius: 2px;
+      background: rgba(235,231,223,.2); transition: all .4s;
+      flex: 1; max-width: 28px;
+    }
+    .hero-imgshow-dot.on { background: var(--accent); max-width: 40px; }
 
     /* Scroll indicator */
     .hero-scroll {
@@ -445,55 +470,70 @@
     }
     .filt.on .filt-count { background: rgba(61,57,53,.18); color: var(--dark); }
 
-    /* masonry */
-    .gallery-grid { columns: 3; column-gap: 1rem; }
-    .g-item {
-      break-inside: avoid; margin-bottom: 1rem;
-      border-radius: 14px; overflow: hidden; position: relative;
-      transition: transform .4s var(--ease), box-shadow .4s;
-      box-shadow: 0 2px 12px rgba(84,79,75,.06); cursor: pointer;
+    /* ── GALLERY CAROUSEL ───────────────────────── */
+    .gcar {
+      position: relative; border-radius: 18px; overflow: hidden;
+      box-shadow: 0 8px 40px rgba(84,79,75,.13);
     }
-    .g-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 16px 40px rgba(84,79,75,.16);
+    .gcar-track {
+      position: relative; width: 100%;
+      height: clamp(320px, 62vh, 680px);
     }
-    .g-img { width: 100%; position: relative; overflow: hidden; }
-    .g-img-inner, .g-img img {
+    .gcar-slide {
       position: absolute; inset: 0;
-      width: 100%; height: 100%; object-fit: cover;
-      transition: transform .7s var(--ease);
+      opacity: 0; transition: opacity .9s ease;
+      cursor: pointer;
     }
-    .g-item:hover .g-img-inner,
-    .g-item:hover .g-img img { transform: scale(1.08); }
-    .g-chip {
-      position: absolute; top: .75rem; left: .75rem;
+    .gcar-slide.on { opacity: 1; z-index: 1; }
+    .gcar-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* progress bar */
+    .gcar-progress {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; background: rgba(255,255,255,.1); z-index: 10;
+    }
+    .gcar-bar {
+      height: 100%; width: 0%; background: var(--accent);
+    }
+    /* overlays */
+    .gcar-chip {
+      position: absolute; top: 1rem; left: 1rem;
       font-family: var(--sans); font-size: .54rem; font-weight: 600;
       letter-spacing: .14em; text-transform: uppercase;
-      padding: .28rem .72rem; border-radius: 100px;
-      background: rgba(30,28,26,.55); backdrop-filter: blur(8px);
-      color: rgba(240,237,230,.85); pointer-events: none;
+      padding: .3rem .8rem; border-radius: 100px;
+      background: rgba(20,18,16,.55); backdrop-filter: blur(8px);
+      color: rgba(240,237,230,.85); z-index: 5; pointer-events: none;
     }
-    .g-shine {
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(30,28,26,.52) 0%, transparent 45%);
-      opacity: 0; transition: opacity .4s; pointer-events: none;
-    }
-    .g-item:hover .g-shine { opacity: 1; }
-    .g-expand {
-      position: absolute; top: .75rem; right: .75rem;
-      width: 36px; height: 36px;
-      border: 1.5px solid rgba(240,237,230,.3);
-      border-radius: 50%;
+    .gcar-expand {
+      position: absolute; top: 1rem; right: 1rem;
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1.5px solid rgba(240,237,230,.25);
       display: flex; align-items: center; justify-content: center;
-      background: rgba(30,28,26,.52); backdrop-filter: blur(8px);
-      opacity: 0; transform: scale(.65);
-      transition: opacity .3s, transform .35s var(--spring), border-color .25s;
+      background: rgba(20,18,16,.52); backdrop-filter: blur(8px);
+      z-index: 5; transition: border-color .25s;
     }
-    .g-item:hover .g-expand { opacity: 1; transform: scale(1); }
-    .g-expand:hover { border-color: rgba(235,180,120,.8); }
-    .g-expand svg { width: 13px; height: 13px; stroke: var(--cream); fill: none; }
-    @media (hover: none) { .g-expand { opacity: 1; transform: scale(1); } }
-    .gallery-more { display: flex; justify-content: center; margin-top: 2.5rem; }
+    .gcar-expand:hover { border-color: rgba(235,180,120,.8); }
+    .gcar-expand svg { width: 14px; height: 14px; stroke: var(--cream); fill: none; }
+    .gcar-counter {
+      position: absolute; bottom: 1.1rem; right: 1.1rem;
+      font-family: var(--sans); font-size: .6rem; font-weight: 500;
+      letter-spacing: .1em; color: rgba(240,237,230,.5);
+      background: rgba(20,18,16,.45); backdrop-filter: blur(8px);
+      padding: .25rem .75rem; border-radius: 100px; z-index: 5;
+    }
+    /* prev/next */
+    .gcar-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 1.5px solid rgba(240,237,230,.18);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(20,18,16,.52); backdrop-filter: blur(8px);
+      color: rgba(240,237,230,.75); transition: all .25s; z-index: 10;
+    }
+    .gcar-nav:hover { border-color: var(--accent); color: var(--accent); background: rgba(235,180,120,.1); }
+    .gcar-nav svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+    .gcar-prev { left: 1rem; }
+    .gcar-next { right: 1rem; }
+    .gallery-more { display: flex; justify-content: center; margin-top: 2rem; }
 
     /* ─── ABOUT ──────────────────────────────────── */
     .about {
@@ -934,19 +974,7 @@
     /* ─── RESPONSIVE ─────────────────────────────── */
     @media (max-width: 1100px) {
       .hero-inner { grid-template-columns: 1fr; gap: 2rem; }
-      /* Stats en fila horizontal debajo del contenido hero */
-      .hero-right {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        width: 100%; max-width: 480px;
-      }
-      .hero-stat-card {
-        border-radius: 0;
-        border-top: 1px solid rgba(255,255,255,.07);
-        border-right: 1px solid rgba(255,255,255,.07);
-      }
-      .hero-stat-card:first-child { border-radius: 10px 0 0 10px; border-left: none; }
-      .hero-stat-card:last-child  { border-radius: 0 10px 10px 0; border-right: none; }
+      .hero-imgshow { display: none; }
       .intro { grid-template-columns: 1fr; gap: 1.5rem; }
       .about { grid-template-columns: 1fr; }
       .about-visual { order: -1; }
@@ -963,17 +991,8 @@
       .nav-links, .nav-cta { display: none; }
       .nav-burger { display: flex; }
 
-      /* Hero: centrar contenido en móvil */
-      .hero {
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
-        align-items: center;
-      }
-      .hero-left {
-        align-items: center;
-        text-align: center;
-        gap: 1.25rem;
-      }
+      .hero { padding-left: 1.5rem; padding-right: 1.5rem; align-items: center; }
+      .hero-left { align-items: center; text-align: center; gap: 1.25rem; }
       .hero-logo-img { width: min(82vw, 340px); }
       .hero-logo-sub { letter-spacing: .18em; }
       .hero-tagline { display: flex; flex-direction: column; align-items: center; }
@@ -982,26 +1001,17 @@
       .hero-acts { justify-content: center; flex-wrap: wrap; }
       .hero-scroll { left: 50%; transform: translateX(-50%); }
 
-      /* Hero right: 3 columnas compactas */
-      .hero-right { max-width: 100%; }
-      .hero-stat-card { padding: 1rem 1.25rem; }
-      .hero-stat-n { font-size: 2rem; }
-
-      /* Gallery */
-      .gallery-grid { columns: 2; }
+      .gcar-track { height: clamp(280px, 52vw, 420px); }
+      .gcar-nav { width: 38px; height: 38px; }
+      .gcar-nav svg { width: 15px; height: 15px; }
       .lb-prev { right: auto; left: .75rem; }
       .lb-next { left: auto; right: .75rem; }
       .lb-nav { background: rgba(20,18,16,.6); backdrop-filter: blur(8px); }
 
-      /* Stats */
       .stats { grid-template-columns: 1fr; }
       .stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,.06); }
       .stat:last-child { border-bottom: none; }
-
-      /* Process */
       .process-grid { grid-template-columns: 1fr; }
-
-      /* Footer */
       .footer { flex-direction: column; text-align: center; }
       .footer-links { justify-content: center; }
     }
@@ -1009,7 +1019,6 @@
     @media (max-width: 480px) {
       .hero-left { gap: .875rem; }
       .hero-logo-img { width: min(88vw, 280px); }
-      .hero-right { display: none; }   /* esconder stats en pantallas muy pequeñas */
       .form-row2 { grid-template-columns: 1fr; }
       .about-badge { display: none; }
       .nav-logo-img { height: 30px; }
@@ -1017,9 +1026,9 @@
       .lb-box { max-width: 94vw; max-height: 88vh; border-radius: 8px; }
       .lb-img { max-height: 88vh; }
       .lb-counter { bottom: -2rem; font-size: .58rem; }
-    }
-    @media (max-width: 380px) {
-      .gallery-grid { columns: 1; }
+      .gcar-track { height: 58vw; min-height: 240px; }
+      .gcar-prev { left: .5rem; }
+      .gcar-next { right: .5rem; }
     }
   </style>
 </head>
@@ -1103,20 +1112,15 @@
       </div>
     </div>
 
-    <!-- Right: mini stats -->
-    <div class="hero-right">
-      <div class="hero-stat-card">
-        <div class="hero-stat-n"><span class="cnt" data-t="200">0</span><b>+</b></div>
-        <div class="hero-stat-l">proyectos</div>
+    <!-- Right: image showcase -->
+    <div class="hero-imgshow" id="hero-imgshow">
+      <div class="hero-imgshow-card" id="hero-imgshow-card">
+        <!-- slides injected by JS -->
+        <div class="hero-imgshow-foot">
+          <div class="hero-imgshow-label" id="hero-imgshow-label">nuestro trabajo</div>
+        </div>
       </div>
-      <div class="hero-stat-card">
-        <div class="hero-stat-n"><span class="cnt" data-t="3">0</span><b>+</b></div>
-        <div class="hero-stat-l">años</div>
-      </div>
-      <div class="hero-stat-card">
-        <div class="hero-stat-n"><span class="cnt" data-t="98">0</span><b>%</b></div>
-        <div class="hero-stat-l">satisfacción</div>
-      </div>
+      <div class="hero-imgshow-dots" id="hero-imgshow-dots"></div>
     </div>
   </div>
 
@@ -1170,14 +1174,24 @@
       </div>
     </div>
   </div>
-  <div class="gallery-grid" id="gg"></div>
-  <div class="gallery-more">
-    <button class="btn btn-outline rev" data-d="2" id="load-more">
-      ver más trabajos
-      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+  <div class="gcar rev" data-d="3">
+    <div class="gcar-track" id="gcar-track">
+      <!-- slides injected by JS -->
+    </div>
+    <div class="gcar-progress"><div class="gcar-bar" id="gcar-bar"></div></div>
+    <button class="gcar-nav gcar-prev" id="gcar-prev">
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <button class="gcar-nav gcar-next" id="gcar-next">
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+    <span class="gcar-chip" id="gcar-chip"></span>
+    <button class="gcar-expand" id="gcar-expand" aria-label="Ampliar">
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <path d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/>
       </svg>
     </button>
+    <span class="gcar-counter" id="gcar-counter"></span>
   </div>
 </section>
 
@@ -1480,58 +1494,122 @@ const ITEMS = [
   { cat:'closet', catLabel:'closet', title:'closet estándar · interior',     img:'images/galeria/closet/closet-2-estandar.jpg',          ratio:'4/3' },
 ];
 
-const gg = document.getElementById('gg');
+/* ─── HERO IMAGE SHOWCASE ───────────────────────── */
+const HERO_IMGS = [
+  { img: 'images/galeria/cocinas/cocina-damar-t7.jpg',          label: 'cocinas' },
+  { img: 'images/galeria/entretenimiento/tv-ciudad-jardin.jpg', label: 'entretenimiento' },
+  { img: 'images/galeria/closet/closet-en-u.jpg',               label: 'closet' },
+  { img: 'images/galeria/cocinas/cocina-serena-mar-1.jpg',      label: 'cocinas' },
+  { img: 'images/galeria/entretenimiento/mueble-tv-1.jpg',      label: 'entretenimiento' },
+  { img: 'images/galeria/cocinas/cocina-territorio-mio.jpg',    label: 'cocinas' },
+];
+(function() {
+  const card  = document.getElementById('hero-imgshow-card');
+  const dotsW = document.getElementById('hero-imgshow-dots');
+  const label = document.getElementById('hero-imgshow-label');
+  if (!card) return;
+  const slides = HERO_IMGS.map((h, i) => {
+    const s = document.createElement('div');
+    s.className = 'hero-imgshow-slide' + (i === 0 ? ' on' : '');
+    s.innerHTML = `<img src="${h.img}" alt="${h.label}" loading="${i === 0 ? 'eager' : 'lazy'}">`;
+    card.insertBefore(s, card.querySelector('.hero-imgshow-foot'));
+    const d = document.createElement('div');
+    d.className = 'hero-imgshow-dot' + (i === 0 ? ' on' : '');
+    dotsW.appendChild(d);
+    return s;
+  });
+  const dots = dotsW.querySelectorAll('.hero-imgshow-dot');
+  let hIdx = 0;
+  function heroNext() {
+    slides[hIdx].classList.remove('on');
+    dots[hIdx].classList.remove('on');
+    hIdx = (hIdx + 1) % slides.length;
+    slides[hIdx].classList.add('on');
+    dots[hIdx].classList.add('on');
+    label.textContent = HERO_IMGS[hIdx].label;
+  }
+  setInterval(heroNext, 5000);
+})();
 
+/* ─── GALLERY CAROUSEL ──────────────────────────── */
 let visibleItems = [];
 let lbCurrentIdx = 0;
+let carIdx = 0;
+let carTimer = null;
+const CAR_INTERVAL = 5000;
 
-function buildItem(item, idx) {
-  const el = document.createElement('div');
-  el.className = 'g-item rev';
-  el.dataset.cat = item.cat;
-  el.dataset.d   = (idx % 3) + 1;
-  const media = item.img
-    ? `<img src="${item.img}" alt="${item.catLabel}" loading="lazy">`
-    : `<div class="g-img-inner" style="background:${item.grad}"></div>`;
-  el.innerHTML = `
-    <div class="g-img" style="aspect-ratio:${item.ratio}">
-      ${media}
-      <span class="g-chip">${item.catLabel}</span>
-      <div class="g-shine"></div>
-      <button class="g-expand" aria-label="Ampliar">
-        <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
-          <path d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/>
-        </svg>
-      </button>
-    </div>`;
-  el.addEventListener('click', () => openLbIdx(idx));
-  el.querySelector('.g-expand').addEventListener('click', e => { e.stopPropagation(); openLbIdx(idx); });
-  return el;
+const gcarTrack   = document.getElementById('gcar-track');
+const gcarBar     = document.getElementById('gcar-bar');
+const gcarChip    = document.getElementById('gcar-chip');
+const gcarCounter = document.getElementById('gcar-counter');
+
+function carUpdateOverlay() {
+  const item = visibleItems[carIdx];
+  if (!item) return;
+  gcarChip.textContent    = item.catLabel;
+  gcarCounter.textContent = `${carIdx + 1} / ${visibleItems.length}`;
 }
 
-function renderGallery(filter = 'all') {
-  gg.innerHTML = '';
+function carGoTo(idx) {
+  const slides = gcarTrack.querySelectorAll('.gcar-slide');
+  if (!slides.length) return;
+  slides[carIdx]?.classList.remove('on');
+  carIdx = (idx + visibleItems.length) % visibleItems.length;
+  slides[carIdx]?.classList.add('on');
+  carUpdateOverlay();
+  carResetBar();
+}
+
+function carResetBar() {
+  gcarBar.style.transition = 'none';
+  gcarBar.style.width = '0%';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    gcarBar.style.transition = `width ${CAR_INTERVAL}ms linear`;
+    gcarBar.style.width = '100%';
+  }));
+}
+
+function carStartAuto() {
+  if (carTimer) clearInterval(carTimer);
+  carTimer = setInterval(() => carGoTo(carIdx + 1), CAR_INTERVAL);
+}
+
+function renderCarousel(filter = 'all') {
   visibleItems = filter === 'all' ? ITEMS : ITEMS.filter(i => i.cat === filter);
+  carIdx = 0;
+  gcarTrack.innerHTML = '';
   visibleItems.forEach((item, i) => {
-    const el = buildItem(item, i);
-    gg.appendChild(el);
-    setTimeout(() => el.classList.add('in'), i * 50);
+    const s = document.createElement('div');
+    s.className = 'gcar-slide' + (i === 0 ? ' on' : '');
+    s.innerHTML = `<img src="${item.img}" alt="${item.catLabel}" loading="${i < 3 ? 'eager' : 'lazy'}">`;
+    gcarTrack.appendChild(s);
   });
-  observe();
+  carUpdateOverlay();
+  if (carTimer) clearInterval(carTimer);
+  carResetBar();
+  carStartAuto();
 }
-renderGallery();
+renderCarousel();
+
+/* Touch swipe on carousel */
+let carTouchX = 0;
+gcarTrack.addEventListener('touchstart', e => { carTouchX = e.touches[0].clientX; }, { passive: true });
+gcarTrack.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - carTouchX;
+  if (Math.abs(dx) > 45) { carGoTo(carIdx + (dx < 0 ? 1 : -1)); carStartAuto(); }
+}, { passive: true });
+
+document.getElementById('gcar-prev').addEventListener('click', () => { carGoTo(carIdx - 1); carStartAuto(); });
+document.getElementById('gcar-next').addEventListener('click', () => { carGoTo(carIdx + 1); carStartAuto(); });
+document.getElementById('gcar-expand').addEventListener('click', () => openLbIdx(carIdx));
+gcarTrack.addEventListener('click', () => openLbIdx(carIdx));
 
 document.querySelectorAll('.filt').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.filt').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
-    renderGallery(btn.dataset.f);
+    renderCarousel(btn.dataset.f);
   });
-});
-
-document.getElementById('load-more').addEventListener('click', function() {
-  this.textContent = 'próximamente más proyectos';
-  this.disabled = true; this.style.opacity = '.5';
 });
 
 /* ─── REVEAL ───────────────────────────────────── */
