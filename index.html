@@ -548,10 +548,11 @@
     .gcar {
       position: relative; border-radius: 18px; overflow: hidden;
       box-shadow: 0 8px 40px rgba(84,79,75,.13);
+      max-width: 960px; margin-left: auto; margin-right: auto;
     }
     .gcar-track {
       position: relative; width: 100%;
-      height: clamp(320px, 62vh, 680px);
+      aspect-ratio: 4/3; height: auto;
     }
     .gcar-slide {
       position: absolute; inset: 0;
@@ -1255,14 +1256,6 @@
     <div class="gallery-head">
       <span class="s-label rev">portafolio</span>
       <h2 class="s-title rev" data-d="1">Nuestro <em>trabajo</em></h2>
-      <div class="gallery-filters-wrap rev" data-d="2">
-        <div class="gallery-filters">
-          <button class="filt on" data-f="all">todo</button>
-          <button class="filt" data-f="cocinas">cocinas</button>
-          <button class="filt" data-f="entretenimiento">entretenimiento</button>
-          <button class="filt" data-f="closet">closet</button>
-        </div>
-      </div>
     </div>
     <div class="gcar rev" data-d="3">
       <div class="gcar-track" id="gcar-track">
@@ -1308,8 +1301,8 @@
   </div>
 
   <div class="about-visual rev" data-d="1">
-    <div class="about-main"><img src="images/galeria/cocinas/cocina-damar-t7.jpg" alt="cocina integral cachas house" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
-    <div class="about-accent"><img src="images/galeria/entretenimiento/tv-ciudad-jardin.jpg" alt="centro de entretenimiento cachas house" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
+    <div class="about-main"><img src="fotos/IMG_8172.jpg" alt="cocina integral cachas house" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
+    <div class="about-accent"><img src="fotos/IMG_7593.jpg" alt="trabajo cachas house" loading="lazy" style="width:100%;height:100%;object-fit:cover;"></div>
     <div class="about-badge">
       <div class="about-badge-n">3<sup style="font-size:.55em;vertical-align:super">+</sup></div>
       <div class="about-badge-l">años de<br>experiencia</div>
@@ -1337,7 +1330,7 @@
 <section class="process" id="proceso">
   <div class="process-head">
     <span class="s-label rev">cómo trabajamos</span>
-    <h2 class="s-title rev" data-d="1">el <em>proceso</em></h2>
+    <h2 class="s-title rev" data-d="1">El <em>proceso</em></h2>
   </div>
   <div class="process-grid">
     <div class="proc rev">
@@ -1471,64 +1464,20 @@
   </form>
 </section>
 
-<!-- ═══════════════ PROJECT TRACKING ═══════════════ -->
+<!-- ═══════════════ PROJECT TRACKING TEASER ═══════════════ -->
 <section class="tracking" id="seguimiento">
   <div class="trk-head">
     <span class="s-label rev">seguimiento</span>
     <h2 class="s-title rev" data-d="1">Tu proyecto, siempre al <em>alcance de un clic</em></h2>
     <p class="rev" data-d="2" style="font-size:.9rem;color:var(--muted);margin-top:.75rem;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.7">
-      Conoce en qué etapa se encuentra tu mobiliario y acompaña el proceso desde el diseño hasta la instalación. Ingresa tu código de seguimiento para ver las actualizaciones más recientes.
+      Conoce en qué etapa se encuentra tu mobiliario y acompaña el proceso desde el diseño hasta la instalación.
     </p>
-  </div>
-
-  <div class="trk-search rev" data-d="3">
-    <input class="trk-input" id="trk-input" type="text" placeholder="Ejemplo: ABC-123" maxlength="10" autocomplete="off" spellcheck="false">
-    <button class="trk-btn-search" id="trk-search-btn">Ver estado de mi proyecto</button>
-  </div>
-
-  <div class="trk-error" id="trk-error">Código no encontrado. Verifica que sea correcto.</div>
-
-  <div class="trk-card" id="trk-card">
-    <div class="trk-card-name" id="trk-project-name">—</div>
-    <div class="trk-card-client">cliente: <span id="trk-client-name">—</span></div>
-    <div class="trk-steps" id="trk-steps"></div>
-    <div class="trk-current-label">etapa actual: <strong id="trk-current-stage">—</strong></div>
-    <div class="trk-updated" id="trk-updated"></div>
-  </div>
-
-  <button class="trk-admin-toggle" id="trk-admin-toggle">administrar proyectos</button>
-
-  <div class="trk-admin-panel" id="trk-admin-panel">
-    <div class="trk-admin-login" id="trk-admin-login">
-      <h3>acceso administrador</h3>
-      <input class="trk-admin-pw" id="trk-admin-pw" type="password" placeholder="contraseña">
-      <div class="trk-admin-err" id="trk-admin-err"></div>
-      <button class="trk-btn-add" id="trk-admin-login-btn" style="width:100%;justify-content:center">entrar</button>
-    </div>
-    <div class="trk-admin-dash" id="trk-admin-dash">
-      <div class="trk-admin-top">
-        <span class="trk-admin-title">proyectos activos</span>
-        <div style="display:flex;gap:.75rem;align-items:center">
-          <button class="trk-btn-add" id="trk-add-project">+ agregar proyecto</button>
-          <button class="trk-btn-logout" id="trk-logout">cerrar sesión</button>
-        </div>
-      </div>
-      <div class="trk-table-wrap">
-        <table class="trk-table">
-          <thead>
-            <tr>
-              <th>código</th>
-              <th>cliente</th>
-              <th>proyecto</th>
-              <th>estado</th>
-              <th>actualizado</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="trk-tbody"></tbody>
-        </table>
-      </div>
-    </div>
+    <a href="seguimiento.html" class="btn btn-primary rev" data-d="3" style="margin-top:2rem;display:inline-flex">
+      Ver estado de mi proyecto
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="margin-left:.5rem">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+      </svg>
+    </a>
   </div>
 </section>
 
@@ -1544,61 +1493,85 @@
 </footer>
 
 <script>
-/* ─── GALLERY DATA ────────────────────────────────────────────────
-   TODO: Replace 'grad' with actual image paths once photos are ready.
-   Example: img: 'images/mesa-comedor.jpg'
-───────────────────────────────────────────────────────────────── */
+/* ─── GALLERY DATA ──────────────────────────────── */
 const ITEMS = [
-  /* ── COCINAS ─────────────────────────────────────── */
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina campestre',             img:'images/galeria/cocinas/cocina-campestre.jpg',          ratio:'3/4'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Damar T7',              img:'images/galeria/cocinas/cocina-damar-t7.jpg',           ratio:'3/4'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Damar T7 · ángulo',     img:'images/galeria/cocinas/cocina-damar-t7-2.jpg',         ratio:'3/4'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Damar T8',              img:'images/galeria/cocinas/cocina-damar-t8.jpg',           ratio:'4/3'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Damar T8 · detalle',    img:'images/galeria/cocinas/cocina-damar-t8-2.jpg',         ratio:'4/3'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Daniel Lemetre',        img:'images/galeria/cocinas/cocina-daniel-lemetre-1.jpg',   ratio:'4/3'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Daniel Lemetre · vista',img:'images/galeria/cocinas/cocina-daniel-lemetre-2.jpg',   ratio:'4/3'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Daniel Lemetre · acabados', img:'images/galeria/cocinas/cocina-daniel-lemetre-3.jpg', ratio:'3/4' },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina lineal',                img:'images/galeria/cocinas/cocina-lineal-1.jpg',           ratio:'3/4'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina lineal · isla',         img:'images/galeria/cocinas/cocina-lineal-2.jpg',           ratio:'1/1'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Manga',                 img:'images/galeria/cocinas/cocina-manga-1.jpg',            ratio:'4/3'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Manga · detalle',       img:'images/galeria/cocinas/cocina-manga-2.jpg',            ratio:'4/3'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Prado Verde',           img:'images/galeria/cocinas/cocina-prado-verde.jpg',        ratio:'4/3'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Serena del Mar',        img:'images/galeria/cocinas/cocina-serena-mar-1.jpg',       ratio:'4/3'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Serena del Mar · perfil',img:'images/galeria/cocinas/cocina-serena-mar-2.jpg',     ratio:'3/4'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Serena del Mar · acabados',img:'images/galeria/cocinas/cocina-serena-mar-3.jpg',   ratio:'3/4'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Territorio Mío',        img:'images/galeria/cocinas/cocina-territorio-mio.jpg',     ratio:'4/3'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Turbaco',               img:'images/galeria/cocinas/cocina-turbaco-1.jpg',          ratio:'1/1'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Turbaco · isla',        img:'images/galeria/cocinas/cocina-turbaco-2.jpg',          ratio:'1/1'  },
-  { cat:'cocinas', catLabel:'cocinas', title:'cocina Turbaco · acabados',    img:'images/galeria/cocinas/cocina-turbaco-3.jpg',          ratio:'1/1'  },
-
-  /* ── ENTRETENIMIENTO ─────────────────────────────── */
-  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro de entretenimiento',          img:'images/galeria/entretenimiento/mueble-tv-1.jpg',        ratio:'4/3' },
-  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · detalle',                img:'images/galeria/entretenimiento/mueble-tv-2.jpg',        ratio:'4/3' },
-  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV flotante',                 img:'images/galeria/entretenimiento/mueble-tv-5.jpg',        ratio:'4/3' },
-  { cat:'entretenimiento', catLabel:'entretenimiento', title:'mueble TV moderno',                  img:'images/galeria/entretenimiento/mueble-tv-6.jpg',        ratio:'1/1' },
-  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · Barranquilla',           img:'images/galeria/entretenimiento/tv-baranquilla.jpg',     ratio:'4/3' },
-  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV campestre',                img:'images/galeria/entretenimiento/tv-campestre.jpg',       ratio:'4/3' },
-  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · Ciudad Jardín',          img:'images/galeria/entretenimiento/tv-ciudad-jardin.jpg',   ratio:'4/3' },
-  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · Territorio Mío',         img:'images/galeria/entretenimiento/tv-territorio-mio.jpg',  ratio:'4/3' },
-  { cat:'entretenimiento', catLabel:'entretenimiento', title:'centro TV · acabados',               img:'images/galeria/entretenimiento/tv-territorio-mio-2.jpg',ratio:'1/1' },
-
-  /* ── CLOSET ──────────────────────────────────────── */
-  { cat:'closet', catLabel:'closet', title:'closet Territorio Mío',          img:'images/galeria/closet/closet-territorio-mio.jpg',      ratio:'4/3' },
-  { cat:'closet', catLabel:'closet', title:'closet Territorio Mío · interior',img:'images/galeria/closet/closet-2-territorio-mio.jpg',   ratio:'4/3' },
-  { cat:'closet', catLabel:'closet', title:'closet en U',                    img:'images/galeria/closet/closet-en-u.jpg',                ratio:'4/3' },
-  { cat:'closet', catLabel:'closet', title:'closet en U · detalle',          img:'images/galeria/closet/closet-2-en-u.jpg',              ratio:'4/3' },
-  { cat:'closet', catLabel:'closet', title:'closet estándar',                img:'images/galeria/closet/closet-estandar.jpg',            ratio:'4/3' },
-  { cat:'closet', catLabel:'closet', title:'closet estándar · interior',     img:'images/galeria/closet/closet-2-estandar.jpg',          ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0560.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0571.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0588.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0589.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0592.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0593.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0595.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0598.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0599.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0602.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0603.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_0605.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1501.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1505.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_15051.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1506.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_15061.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1507.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_15071.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1508.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1509.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1510.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1513.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1535.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1652.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1655.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1656.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1658.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1659.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1662.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_1663.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_16631.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_3290.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_3299.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_7593.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_7599.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_7685.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_7695.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_7710.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8170.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8171.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8172.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8173.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8174.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8175.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8176.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8177.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8178.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8179.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8180.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8183.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8195.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8199.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8211.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8216.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8219.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8362.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8372.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8638.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8640.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8659.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_8660.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_9514.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_9523.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_9864.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_9867.jpg', ratio:'4/3' },
+  { cat:'portfolio', catLabel:'portafolio', title:'', img:'fotos/IMG_9885.jpg', ratio:'4/3' },
 ];
 
 /* ─── HERO IMAGE SHOWCASE ───────────────────────── */
 const HERO_IMGS = [
-  { img: 'images/galeria/cocinas/cocina-damar-t7.jpg',          label: 'cocinas' },
-  { img: 'images/galeria/entretenimiento/tv-ciudad-jardin.jpg', label: 'entretenimiento' },
-  { img: 'images/galeria/closet/closet-en-u.jpg',               label: 'closet' },
-  { img: 'images/galeria/cocinas/cocina-serena-mar-1.jpg',      label: 'cocinas' },
-  { img: 'images/galeria/entretenimiento/mueble-tv-1.jpg',      label: 'entretenimiento' },
-  { img: 'images/galeria/cocinas/cocina-territorio-mio.jpg',    label: 'cocinas' },
+  { img: 'fotos/IMG_8172.jpg', label: 'nuestro trabajo' },
+  { img: 'fotos/IMG_8175.jpg', label: 'nuestro trabajo' },
+  { img: 'fotos/IMG_1658.jpg', label: 'nuestro trabajo' },
+  { img: 'fotos/IMG_7593.jpg', label: 'nuestro trabajo' },
+  { img: 'fotos/IMG_8180.jpg', label: 'nuestro trabajo' },
+  { img: 'fotos/IMG_9885.jpg', label: 'nuestro trabajo' },
 ];
 (function() {
   const card  = document.getElementById('hero-imgshow-card');
@@ -1840,10 +1813,10 @@ lb.addEventListener('touchend', e => {
   if (Math.abs(dx) > 50) lbStep(dx < 0 ? 1 : -1);
 }, { passive: true });
 
-/* ─── PROJECT TRACKING ─────────────────────────── */
-(function() {
+/* ─── PROJECT TRACKING — moved to seguimiento.html ─ */
+(function() { return; // tracking logic lives in seguimiento.html
   const FIREBASE_URL = 'https://cachashouse-322a2-default-rtdb.firebaseio.com/';
-  const ADMIN_PW = 'cachas2025'; // change this to a secure password
+  const ADMIN_PW = 'cachas2025';
   const DB_PATH  = 'cachas-projects';
   const STAGES   = [
     'Material en corte',
