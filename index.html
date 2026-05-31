@@ -2041,22 +2041,14 @@ document.getElementById('contact-form').addEventListener('submit', function(e) {
   const tipo     = fields[3].value;
   const desc     = fields[4].value.trim();
 
-  const ic = {
-    wave:   String.fromCodePoint(0x1F44B),
-    person: String.fromCodePoint(0x1F464),
-    phone:  String.fromCodePoint(0x1F4DE),
-    mail:   String.fromCodePoint(0x1F4E7),
-    house:  String.fromCodePoint(0x1F3E0),
-    memo:   String.fromCodePoint(0x1F4DD),
-  };
   const msg =
-    'Hola Cachas House! ' + ic.wave + '\n\n' +
+    'Hola Cachas House!\n\n' +
     '*Nuevo mensaje desde el sitio web*\n\n' +
-    ic.person + ' *Nombre:* '           + nombre   + '\n' +
-    ic.phone  + ' *Teléfono:* '         + telefono + '\n' +
-    ic.mail   + ' *Email:* '            + email    + '\n' +
-    ic.house  + ' *Tipo de proyecto:* ' + tipo     + '\n' +
-    (desc ? ic.memo + ' *Descripción:*\n' + desc + '\n' : '') +
+    '*Nombre:* '           + nombre   + '\n' +
+    '*Teléfono:* '         + telefono + '\n' +
+    '*Email:* '            + email    + '\n' +
+    '*Tipo de proyecto:* ' + tipo     + '\n' +
+    (desc ? '*Descripción:*\n' + desc + '\n' : '') +
     '\n_Enviado desde cachashouse.com_';
 
   const url = 'https://wa.me/573012476888?text=' + encodeURIComponent(msg);
