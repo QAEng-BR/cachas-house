@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Seguimiento de proyecto — Cachas House</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -390,8 +394,13 @@
 <script>
 (function() {
   const FIREBASE_URL = 'https://cachashouse-322a2-default-rtdb.firebaseio.com/';
-  const ADMIN_PW = 'cachas2025';
+  const ADMIN_HASH = '1a30eb14c2112c0fa86f1968a26c532103ce3149c076700118e056adba8a5be4';
   const DB_PATH  = 'cachas-projects';
+
+  async function hashInput(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
   const STAGES   = [
     'Material en corte',
     'Material en el taller',
@@ -501,15 +510,18 @@
   trkAdminPw.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
 
   function tryLogin() {
-    if (trkAdminPw.value === ADMIN_PW) {
-      adminLoggedIn = true;
-      trkAdminLogin.style.display = 'none';
-      trkAdminDash.classList.add('visible');
-      startLiveTable();
-    } else {
-      trkAdminErr.textContent = 'Contraseña incorrecta.';
-      trkAdminPw.select();
-    }
+    const pw = trkAdminPw.value;
+    hashInput(pw).then(hash => {
+      if (hash === ADMIN_HASH) {
+        adminLoggedIn = true;
+        trkAdminLogin.style.display = 'none';
+        trkAdminDash.classList.add('visible');
+        startLiveTable();
+      } else {
+        trkAdminErr.textContent = 'Contraseña incorrecta.';
+        trkAdminPw.select();
+      }
+    });
   }
 
   trkLogout.addEventListener('click', () => {
