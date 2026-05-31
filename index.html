@@ -281,20 +281,21 @@
     }
 
     .hero-desc {
-      display: flex; flex-direction: column; gap: .9rem;
-      max-width: 500px;
+      display: flex; flex-direction: column; gap: 1rem;
+      width: 100%;
       opacity: 0; transform: translateY(18px);
       animation: fadeup .8s var(--easeout) 1s forwards;
     }
     .hero-desc-main {
-      font-size: clamp(1.1rem,1.9vw,1.5rem); font-weight: 500;
-      color: rgba(235,231,223,.88); line-height: 1.5;
-      letter-spacing: -.01em;
+      font-family: var(--round);
+      font-size: clamp(1.45rem,2.8vw,2.2rem); font-weight: 700;
+      color: rgba(235,231,223,.92); line-height: 1.35;
+      letter-spacing: -.02em;
     }
     .hero-desc-sub {
-      font-size: clamp(.85rem,1.2vw,.95rem); font-weight: 300;
-      color: rgba(235,231,223,.42); line-height: 1.85;
-      letter-spacing: .01em;
+      font-size: clamp(.9rem,1.3vw,1rem); font-weight: 300;
+      color: rgba(235,231,223,.45); line-height: 1.85;
+      letter-spacing: .01em; max-width: 420px;
     }
     .hero-services {
       list-style: none; display: flex; flex-direction: column; gap: .45rem;
