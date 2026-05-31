@@ -2028,14 +2028,37 @@ lb.addEventListener('touchend', e => {
   });
 })();
 
-/* ─── FORM ─────────────────────────────────────── */
+/* ─── FORM → WHATSAPP ───────────────────────────── */
 document.getElementById('contact-form').addEventListener('submit', function(e) {
   e.preventDefault();
+  const fields = this.querySelectorAll('input, select, textarea');
+  const nombre   = fields[0].value.trim();
+  const telefono = fields[1].value.trim();
+  const email    = fields[2].value.trim();
+  const tipo     = fields[3].value;
+  const desc     = fields[4].value.trim();
+
+  const msg =
+    `Hola Cachas House! 👋\n\n` +
+    `*Nuevo mensaje desde el sitio web*\n\n` +
+    `👤 *Nombre:* ${nombre}\n` +
+    `📞 *Teléfono:* ${telefono}\n` +
+    `📧 *Email:* ${email}\n` +
+    `🏠 *Tipo de proyecto:* ${tipo}\n` +
+    (desc ? `📝 *Descripción:*\n${desc}\n` : '') +
+    `\n_Enviado desde cachashouse.com_`;
+
+  const url = 'https://wa.me/573012476888?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
+
   const btn = this.querySelector('[type=submit]');
-  btn.textContent = '✓ mensaje enviado';
+  btn.textContent = '✓ abriendo WhatsApp…';
   btn.style.background = '#A8672F';
-  btn.disabled = true;
-  /* TODO: integrar Formspree / EmailJS / backend real */
+  setTimeout(() => {
+    btn.textContent = 'Quiero cotizar mi espacio';
+    btn.style.background = '';
+    this.reset();
+  }, 3000);
 });
 
 /* ─── KITCHEN ASSEMBLY ANIMATION ───────────────── */
