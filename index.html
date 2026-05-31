@@ -281,11 +281,20 @@
     }
 
     .hero-desc {
-      font-size: clamp(.9rem,1.3vw,1rem); font-weight: 300;
-      color: rgba(235,231,223,.55); max-width: 380px;
-      line-height: 1.85;
+      display: flex; flex-direction: column; gap: .9rem;
+      max-width: 500px;
       opacity: 0; transform: translateY(18px);
       animation: fadeup .8s var(--easeout) 1s forwards;
+    }
+    .hero-desc-main {
+      font-size: clamp(1.1rem,1.9vw,1.5rem); font-weight: 500;
+      color: rgba(235,231,223,.88); line-height: 1.5;
+      letter-spacing: -.01em;
+    }
+    .hero-desc-sub {
+      font-size: clamp(.85rem,1.2vw,.95rem); font-weight: 300;
+      color: rgba(235,231,223,.42); line-height: 1.85;
+      letter-spacing: .01em;
     }
     .hero-services {
       list-style: none; display: flex; flex-direction: column; gap: .45rem;
@@ -1174,8 +1183,8 @@
     <div class="hero-left">
 
       <p class="hero-desc">
-        Somos una carpintería arquitectónica especializada en transformar espacios a través de soluciones funcionales, modernas y personalizadas.
-        Creamos piezas a la medida de tus sueños.
+        <span class="hero-desc-main">Somos una carpintería arquitectónica especializada en transformar espacios a través de soluciones funcionales, modernas y personalizadas.</span>
+        <span class="hero-desc-sub">Creamos piezas a la medida de tus sueños.</span>
       </p>
 
       <div class="hero-acts">
