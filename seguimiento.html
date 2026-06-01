@@ -338,10 +338,7 @@
       display: flex; align-items: center;
       justify-content: space-between; flex-wrap: wrap; gap: 1rem;
     }
-    .footer-logo {
-      font-family: var(--round); font-size: .9rem;
-      font-weight: 800; color: rgba(235,231,223,.4);
-    }
+    .footer-logo img { height: 32px; opacity: .55; display: block; }
     .footer-copy { font-size: .65rem; color: rgba(235,231,223,.2); }
 
     @media (max-width: 600px) {
@@ -452,7 +449,7 @@
   </div>
 
   <footer class="footer">
-    <span class="footer-logo">cachas house</span>
+    <span class="footer-logo"><img src="images/LOGO-VERSION1(4).png" alt="cachas house"></span>
     <span class="footer-copy">© 2025 cachas house. todos los derechos reservados.</span>
   </footer>
 
@@ -676,23 +673,21 @@
         const digits = phone.replace(/^\+/, '');
 
         const progressLines = STAGES.map((s, i) => {
-          if (i < currentIdx)  return '✅ ' + s;
-          if (i === currentIdx) return '🔄 *' + s + '*';
-          return '⬜ ' + s;
+          if (i < currentIdx)   return '~' + s + '~';
+          if (i === currentIdx) return '*' + s + '* <- aqui estamos';
+          return s;
         }).join('\n');
 
         const msg =
-          '🏠 *CACHAS HOUSE*\n' +
-          '━━━━━━━━━━━━━━━━━━\n' +
-          '📦 *Actualización de tu proyecto*\n\n' +
+          '*CACHAS HOUSE*\n' +
+          '*Actualizacion de tu proyecto*\n\n' +
           '*Cliente:* ' + client + '\n' +
           '*Proyecto:* ' + project + '\n\n' +
           '*Progreso:*\n' +
-          progressLines + '\n' +
-          '━━━━━━━━━━━━━━━━━━\n' +
-          '🔗 Ver tu seguimiento:\n' +
+          progressLines + '\n\n' +
+          '*Ver tu seguimiento:*\n' +
           link + '\n\n' +
-          '_Cachas House · Carpintería arquitectónica_';
+          '_Cachas House - Carpinteria arquitectonica_';
 
         window.open('https://wa.me/' + digits + '?text=' + encodeURIComponent(msg), '_blank');
       });
