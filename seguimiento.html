@@ -52,10 +52,7 @@
       padding: 0 clamp(1.5rem,5vw,4rem);
       height: 64px; display: flex; align-items: center; justify-content: space-between;
     }
-    .nav-logo {
-      font-family: var(--round); font-weight: 800;
-      font-size: 1rem; color: var(--dark); letter-spacing: -.01em;
-    }
+    .nav-logo img { height: 36px; display: block; }
     .nav-back {
       font-family: var(--sans); font-size: .72rem; font-weight: 600;
       letter-spacing: .1em; text-transform: uppercase;
@@ -361,7 +358,7 @@
 <body>
 
   <nav class="nav">
-    <span class="nav-logo">cachas house</span>
+    <a href="index.html" class="nav-logo"><img src="images/logo/logo.png" alt="cachas house"></a>
     <a href="index.html" class="nav-back">
       <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
