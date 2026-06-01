@@ -198,7 +198,7 @@
       color: var(--faint); transition: color .2s;
     }
     .trk-admin-toggle:hover { color: var(--muted); }
-    .trk-admin-panel { max-width: 960px; margin: 2rem auto 0; display: none; }
+    .trk-admin-panel { max-width: min(1280px, 96vw); margin: 2rem auto 0; display: none; }
     .trk-admin-panel.visible { display: block; }
     .trk-admin-login {
       max-width: 340px; margin: 0 auto;
@@ -227,7 +227,7 @@
       background: white; border: 1.5px solid var(--border);
       border-radius: 16px; overflow: auto;
     }
-    .trk-table { width: 100%; border-collapse: collapse; min-width: 640px; }
+    .trk-table { width: 100%; border-collapse: collapse; min-width: 900px; }
     .trk-table th {
       text-align: left; font-family: var(--sans); font-size: .57rem;
       letter-spacing: .15em; text-transform: uppercase;
@@ -256,14 +256,24 @@
       transition: border-color .2s; max-width: 220px; width: 100%;
     }
     .trk-status-sel:focus { border-color: var(--accent); }
-    .trk-table input[type="text"] {
+    .trk-table input[type="text"],
+    .trk-table input[type="tel"] {
       background: var(--surf); border: 1.5px solid var(--border);
       border-radius: 8px; padding: .35rem .6rem;
       font-family: var(--sans); font-size: .82rem;
       color: var(--text); outline: none; width: 100%; min-width: 110px;
       transition: border-color .2s;
     }
-    .trk-table input[type="text"]:focus { border-color: var(--accent); }
+    .trk-table input[type="text"]:focus,
+    .trk-table input[type="tel"]:focus { border-color: var(--accent); }
+    .trk-btn-notify {
+      background: none; border: 1.5px solid rgba(37,211,102,.35);
+      border-radius: 8px; padding: .3rem .65rem;
+      color: #1a9c5b; font-size: .72rem;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+      font-family: var(--sans);
+    }
+    .trk-btn-notify:hover { background: rgba(37,211,102,.1); border-color: rgba(37,211,102,.7); color: #128C7E; }
     .trk-btn-del {
       background: none; border: 1.5px solid rgba(192,57,43,.25);
       border-radius: 8px; padding: .3rem .65rem;
@@ -288,6 +298,40 @@
     }
     .trk-btn-logout:hover { border-color: var(--muted); color: var(--text); }
     .trk-empty { text-align: center; padding: 3rem; color: var(--faint); font-size: .85rem; }
+
+    /* MODAL */
+    .trk-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(30,26,22,.55); backdrop-filter: blur(4px);
+      z-index: 900; align-items: center; justify-content: center;
+    }
+    .trk-modal-overlay.open { display: flex; }
+    .trk-modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2rem;
+      width: min(420px, 92vw); box-shadow: 0 24px 64px rgba(0,0,0,.18);
+    }
+    .trk-modal h3 {
+      font-family: var(--round); font-size: 1.05rem; font-weight: 700;
+      color: var(--text); margin: 0 0 1.4rem;
+    }
+    .trk-modal-field { margin-bottom: 1rem; }
+    .trk-modal-field label {
+      display: block; font-size: .7rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: .35rem;
+    }
+    .trk-modal-field input {
+      width: 100%; box-sizing: border-box;
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: .65rem .9rem;
+      font-family: var(--sans); font-size: .88rem; color: var(--text);
+      outline: none; transition: border-color .2s;
+    }
+    .trk-modal-field input:focus { border-color: var(--accent); }
+    .trk-modal-actions {
+      display: flex; gap: .75rem; margin-top: 1.5rem; justify-content: flex-end;
+    }
 
     /* FOOTER */
     .footer {
@@ -374,8 +418,10 @@
                 <th>código</th>
                 <th>cliente</th>
                 <th>proyecto</th>
+                <th>teléfono</th>
                 <th>estado</th>
                 <th>actualizado</th>
+                <th></th>
                 <th></th>
               </tr>
             </thead>
@@ -385,6 +431,28 @@
       </div>
     </div>
   </main>
+
+  <div class="trk-modal-overlay" id="trk-modal-overlay">
+    <div class="trk-modal">
+      <h3>nuevo proyecto</h3>
+      <div class="trk-modal-field">
+        <label>nombre del cliente</label>
+        <input type="text" id="modal-client" placeholder="Ej. Juan García" autocomplete="off">
+      </div>
+      <div class="trk-modal-field">
+        <label>nombre del proyecto</label>
+        <input type="text" id="modal-project" placeholder="Ej. Cocina integral">
+      </div>
+      <div class="trk-modal-field">
+        <label>teléfono WhatsApp</label>
+        <input type="tel" id="modal-phone" placeholder="+57 300 000 0000">
+      </div>
+      <div class="trk-modal-actions">
+        <button class="trk-btn-logout" id="modal-cancel">cancelar</button>
+        <button class="trk-btn-add" id="modal-confirm">crear proyecto</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="footer">
     <span class="footer-logo">cachas house</span>
@@ -553,7 +621,7 @@
   function renderTable(projects) {
     const keys = Object.keys(projects);
     if (keys.length === 0) {
-      trkTbody.innerHTML = '<tr><td colspan="6" class="trk-empty">No hay proyectos aún. Agrega el primero.</td></tr>';
+      trkTbody.innerHTML = '<tr><td colspan="8" class="trk-empty">No hay proyectos aún. Agrega el primero.</td></tr>';
       return;
     }
     trkTbody.innerHTML = '';
@@ -564,12 +632,14 @@
         <td><span class="trk-code-chip" title="Copiar código" data-copy="${code}">${code}</span></td>
         <td><input type="text" value="${esc(p.client||'')}" data-code="${code}" data-field="client" placeholder="Nombre cliente"></td>
         <td><input type="text" value="${esc(p.project||'')}" data-code="${code}" data-field="project" placeholder="Nombre proyecto"></td>
+        <td><input type="tel" value="${esc(p.phone||'')}" data-code="${code}" data-field="phone" placeholder="+57 300 0000000"></td>
         <td>
           <select class="trk-status-sel" data-code="${code}">
             ${STAGES.map((s,i) => `<option value="${i}"${p.status==i?' selected':''}>${s}</option>`).join('')}
           </select>
         </td>
         <td style="white-space:nowrap">${p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+        <td><button class="trk-btn-notify" data-code="${code}" title="Notificar cliente por WhatsApp">WhatsApp</button></td>
         <td><button class="trk-btn-del" data-code="${code}">eliminar</button></td>`;
       trkTbody.appendChild(tr);
     });
@@ -583,7 +653,7 @@
         });
       });
     });
-    trkTbody.querySelectorAll('input[type="text"]').forEach(inp => {
+    trkTbody.querySelectorAll('input[type="text"], input[type="tel"]').forEach(inp => {
       inp.addEventListener('blur', () => {
         db.ref(DB_PATH + '/' + inp.dataset.code + '/' + inp.dataset.field).set(inp.value.trim());
       });
@@ -594,6 +664,40 @@
           status: parseInt(sel.value),
           updatedAt: new Date().toISOString(),
         });
+      });
+    });
+    trkTbody.querySelectorAll('.trk-btn-notify').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const code = btn.dataset.code;
+        const row  = btn.closest('tr');
+        const phone = row.querySelector('input[data-field="phone"]').value.trim().replace(/\s+/g, '');
+        if (!phone) { alert('Agrega el teléfono del cliente primero.'); return; }
+        const client    = row.querySelector('input[data-field="client"]').value.trim() || 'Cliente';
+        const project   = row.querySelector('input[data-field="project"]').value.trim() || 'tu proyecto';
+        const currentIdx = parseInt(row.querySelector('.trk-status-sel').value);
+        const link = 'https://qaeng-br.github.io/cachas-house/seguimiento.html?code=' + code;
+        const digits = phone.replace(/^\+/, '');
+
+        const progressLines = STAGES.map((s, i) => {
+          if (i < currentIdx)  return '✅ ' + s;
+          if (i === currentIdx) return '🔄 *' + s + '*';
+          return '⬜ ' + s;
+        }).join('\n');
+
+        const msg =
+          '🏠 *CACHAS HOUSE*\n' +
+          '━━━━━━━━━━━━━━━━━━\n' +
+          '📦 *Actualización de tu proyecto*\n\n' +
+          '*Cliente:* ' + client + '\n' +
+          '*Proyecto:* ' + project + '\n\n' +
+          '*Progreso:*\n' +
+          progressLines + '\n' +
+          '━━━━━━━━━━━━━━━━━━\n' +
+          '🔗 Ver tu seguimiento:\n' +
+          link + '\n\n' +
+          '_Cachas House · Carpintería arquitectónica_';
+
+        window.open('https://wa.me/' + digits + '?text=' + encodeURIComponent(msg), '_blank');
       });
     });
     trkTbody.querySelectorAll('.trk-btn-del').forEach(btn => {
@@ -607,14 +711,42 @@
 
   function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  trkAddProject.addEventListener('click', () => {
-    const code = genCode();
+  const modalOverlay  = document.getElementById('trk-modal-overlay');
+  const modalClient   = document.getElementById('modal-client');
+  const modalProject  = document.getElementById('modal-project');
+  const modalPhone    = document.getElementById('modal-phone');
+  const modalCancel   = document.getElementById('modal-cancel');
+  const modalConfirm  = document.getElementById('modal-confirm');
+
+  function openModal() {
+    modalClient.value = '';
+    modalProject.value = '';
+    modalPhone.value = '';
+    modalOverlay.classList.add('open');
+    setTimeout(() => modalClient.focus(), 80);
+  }
+  function closeModal() { modalOverlay.classList.remove('open'); }
+
+  trkAddProject.addEventListener('click', openModal);
+  modalCancel.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+
+  function createProject() {
+    const client  = modalClient.value.trim() || 'Nuevo cliente';
+    const project = modalProject.value.trim() || 'Nuevo proyecto';
+    const phone   = modalPhone.value.trim();
+    const code    = genCode();
     db.ref(DB_PATH + '/' + code).set({
-      client: 'Nuevo cliente',
-      project: 'Nuevo proyecto',
+      client, project, phone,
       status: 0,
       updatedAt: new Date().toISOString(),
     });
+    closeModal();
+  }
+
+  modalConfirm.addEventListener('click', createProject);
+  [modalClient, modalProject, modalPhone].forEach(inp => {
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') createProject(); });
   });
 })();
 </script>
