@@ -737,47 +737,59 @@
         const link = 'https://qaeng-br.github.io/cachas-house/seguimiento.html?code=' + code;
         const digits = phone.replace(/^\+/, '');
 
-        const ic = {
-          house:  String.fromCodePoint(0x1F3E0),
-          box:    String.fromCodePoint(0x1F4E6),
-          check:  String.fromCodePoint(0x2705),
-          spin:   String.fromCodePoint(0x1F504),
-          empty:  String.fromCodePoint(0x2B1C),
-          link:   String.fromCodePoint(0x1F517),
-          warn:   String.fromCodePoint(0x26A0),
-          line:   String.fromCodePoint(0x2501).repeat(18),
-        };
-
-        const progressLines = STAGES.map((s, i) => {
-          if (i < currentIdx)   return ic.check + ' ' + s;
-          if (i === currentIdx) return ic.spin  + ' *' + s + '*';
-          return ic.empty + ' ' + s;
-        }).join('\n');
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
         const deliveryDateRaw = row.querySelector('input[data-field="deliveryDate"]').value;
         const delayReason     = row.querySelector('input[data-field="delayReason"]').value.trim();
-        let deliveryLine = '';
-        if (deliveryDateRaw) {
-          const dFmt = new Date(deliveryDateRaw + 'T12:00:00').toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
-          deliveryLine = '\n*Entrega estimada:* ' + dFmt + '\n' +
-            (delayReason
-              ? ic.warn + ' *Actualizacion de plazo:* ' + delayReason
-              : ic.check + ' Seguimos on track');
-        }
 
-        const msg =
-          ic.house + ' *CACHAS HOUSE*\n' +
-          ic.line + '\n' +
-          ic.box + ' *Actualizacion de tu proyecto*\n\n' +
-          '*Cliente:* ' + client + '\n' +
-          '*Proyecto:* ' + project + '\n\n' +
-          '*Progreso:*\n' +
-          progressLines +
-          deliveryLine + '\n' +
-          ic.line + '\n' +
-          ic.link + ' Ver tu seguimiento:\n' +
-          link + '\n\n' +
-          '_Cachas House - Carpinteria arquitectonica_';
+        let progressLines, deliveryLine, msg;
+
+        if (isMobile) {
+          const ic = {
+            house:  String.fromCodePoint(0x1F3E0),
+            box:    String.fromCodePoint(0x1F4E6),
+            check:  String.fromCodePoint(0x2705),
+            spin:   String.fromCodePoint(0x1F504),
+            empty:  String.fromCodePoint(0x2B1C),
+            link:   String.fromCodePoint(0x1F517),
+            warn:   String.fromCodePoint(0x26A0),
+            line:   String.fromCodePoint(0x2501).repeat(18),
+          };
+          progressLines = STAGES.map((s, i) => {
+            if (i < currentIdx)   return ic.check + ' ' + s;
+            if (i === currentIdx) return ic.spin  + ' *' + s + '*';
+            return ic.empty + ' ' + s;
+          }).join('\n');
+          deliveryLine = '';
+          if (deliveryDateRaw) {
+            const dFmt = new Date(deliveryDateRaw + 'T12:00:00').toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+            deliveryLine = '\n*Entrega estimada:* ' + dFmt + '\n' +
+              (delayReason ? ic.warn + ' *Actualizacion de plazo:* ' + delayReason : ic.check + ' Seguimos on track');
+          }
+          msg = ic.house + ' *CACHAS HOUSE*\n' + ic.line + '\n' +
+            ic.box + ' *Actualizacion de tu proyecto*\n\n' +
+            '*Cliente:* ' + client + '\n*Proyecto:* ' + project + '\n\n' +
+            '*Progreso:*\n' + progressLines + deliveryLine + '\n' +
+            ic.line + '\n' + ic.link + ' Ver tu seguimiento:\n' + link + '\n\n' +
+            '_Cachas House - Carpinteria arquitectonica_';
+        } else {
+          progressLines = STAGES.map((s, i) => {
+            if (i < currentIdx)   return '~' + s + '~';
+            if (i === currentIdx) return '*' + s + '*';
+            return s;
+          }).join('\n');
+          deliveryLine = '';
+          if (deliveryDateRaw) {
+            const dFmt = new Date(deliveryDateRaw + 'T12:00:00').toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+            deliveryLine = '\n*Entrega estimada:* ' + dFmt + '\n' +
+              (delayReason ? '⚠ *Actualizacion de plazo:* ' + delayReason : '✓ Seguimos on track');
+          }
+          msg = '*CACHAS HOUSE*\n*Actualizacion de tu proyecto*\n\n' +
+            '*Cliente:* ' + client + '\n*Proyecto:* ' + project + '\n\n' +
+            '*Progreso:*\n' + progressLines + deliveryLine + '\n\n' +
+            '*Ver tu seguimiento:*\n' + link + '\n\n' +
+            '_Cachas House - Carpinteria arquitectonica_';
+        }
 
         window.open('https://wa.me/' + digits + '?text=' + encodeURIComponent(msg), '_blank');
       });
