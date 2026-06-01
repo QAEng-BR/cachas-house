@@ -672,20 +672,32 @@
         const link = 'https://qaeng-br.github.io/cachas-house/seguimiento.html?code=' + code;
         const digits = phone.replace(/^\+/, '');
 
+        const ic = {
+          house:  String.fromCodePoint(0x1F3E0),
+          box:    String.fromCodePoint(0x1F4E6),
+          check:  String.fromCodePoint(0x2705),
+          spin:   String.fromCodePoint(0x1F504),
+          empty:  String.fromCodePoint(0x2B1C),
+          link:   String.fromCodePoint(0x1F517),
+          line:   String.fromCodePoint(0x2501).repeat(18),
+        };
+
         const progressLines = STAGES.map((s, i) => {
-          if (i < currentIdx)   return '~' + s + '~';
-          if (i === currentIdx) return '*' + s + '* <- aqui estamos';
-          return s;
+          if (i < currentIdx)   return ic.check + ' ' + s;
+          if (i === currentIdx) return ic.spin  + ' *' + s + '*';
+          return ic.empty + ' ' + s;
         }).join('\n');
 
         const msg =
-          '*CACHAS HOUSE*\n' +
-          '*Actualizacion de tu proyecto*\n\n' +
+          ic.house + ' *CACHAS HOUSE*\n' +
+          ic.line + '\n' +
+          ic.box + ' *Actualizacion de tu proyecto*\n\n' +
           '*Cliente:* ' + client + '\n' +
           '*Proyecto:* ' + project + '\n\n' +
           '*Progreso:*\n' +
-          progressLines + '\n\n' +
-          '*Ver tu seguimiento:*\n' +
+          progressLines + '\n' +
+          ic.line + '\n' +
+          ic.link + ' Ver tu seguimiento:\n' +
           link + '\n\n' +
           '_Cachas House - Carpinteria arquitectonica_';
 
