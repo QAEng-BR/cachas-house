@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Panel admin — Cachas House</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,700&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="js/cachas-firebase.js"></script>
+
+  <style>
+    :root {
+      --bg:       #F0EDE6;
+      --surf:     #F8F5EF;
+      --surf2:    #E4DED4;
+      --dark:     #3D3935;
+      --text:     #544F4B;
+      --muted:    #968372;
+      --faint:    #BAB2A8;
+      --accent:   #EBB478;
+      --accentdk: #A8672F;
+      --cream:    #EBE7DF;
+      --border:   rgba(84,79,75,.1);
+      --bordersub:rgba(84,79,75,.07);
+      --round: 'Poppins', system-ui, sans-serif;
+      --sans:  'Poppins', system-ui, sans-serif;
+      --ease: cubic-bezier(.4,0,.2,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--sans); font-weight: 400;
+      line-height: 1.6; overflow-x: hidden; min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { background: none; border: none; font-family: inherit; cursor: pointer; }
+
+    /* NAV */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(240,237,230,.88); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--bordersub);
+      padding: 0 clamp(1.5rem,5vw,4rem);
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo img { height: 36px; display: block; }
+    .nav-back {
+      font-family: var(--sans); font-size: .72rem; font-weight: 600;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--muted); display: flex; align-items: center; gap: .5rem;
+      transition: color .2s;
+    }
+    .nav-back:hover { color: var(--accentdk); }
+    .nav-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+
+    /* MAIN */
+    .page {
+      padding: clamp(3rem,7vw,6rem) clamp(1.5rem,5vw,4rem);
+      min-height: calc(100vh - 64px - 70px);
+    }
+
+    /* HEADER */
+    .page-head { text-align: center; margin-bottom: 2.5rem; }
+    .s-label {
+      display: inline-flex; align-items: center; gap: .75rem;
+      font-family: var(--sans); font-size: .62rem; font-weight: 600;
+      letter-spacing: .28em; text-transform: uppercase;
+      color: var(--accentdk); margin-bottom: .75rem;
+    }
+    .s-label::before {
+      content: ''; flex-shrink: 0; width: 24px; height: 2px;
+      background: var(--accent); border-radius: 1px;
+    }
+    .s-title {
+      font-family: var(--round); font-size: clamp(1.8rem,4vw,3rem);
+      font-weight: 800; line-height: 1.1; letter-spacing: -.02em; color: var(--dark);
+    }
+    .s-title em { font-style: italic; color: var(--accent); }
+
+    /* SEARCH */
+    .trk-search {
+      max-width: 520px; margin: 2.25rem auto 0;
+      display: flex; gap: .75rem;
+    }
+    .trk-input {
+      flex: 1; background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 100px; padding: .9rem 1.6rem;
+      font-family: var(--sans); font-size: .95rem;
+      color: var(--text); outline: none;
+      transition: border-color .25s;
+      text-transform: uppercase; letter-spacing: .1em;
+    }
+    .trk-input::placeholder { text-transform: none; letter-spacing: 0; color: var(--faint); }
+    .trk-input:focus { border-color: var(--accent); }
+    .trk-btn-search {
+      padding: .9rem 1.75rem; border-radius: 100px;
+      background: var(--accent); color: var(--dark);
+      font-family: var(--sans); font-size: .72rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      transition: background .25s, color .25s; white-space: nowrap;
+    }
+    .trk-btn-search:hover { background: var(--accentdk); color: var(--cream); }
+    .trk-btn-search:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ERROR */
+    .trk-error {
+      max-width: 520px; margin: 1.25rem auto 0;
+      text-align: center; font-size: .82rem;
+      color: #c0392b; display: none;
+    }
+    .trk-error.visible { display: block; }
+
+    /* CARD */
+    .trk-card {
+      max-width: 760px; margin: 2.5rem auto 0;
+      background: white; border: 1.5px solid var(--border);
+      border-radius: 24px; padding: 2.5rem; display: none;
+      box-shadow: 0 8px 32px rgba(84,79,75,.08);
+    }
+    .trk-card.visible { display: block; }
+    .trk-card-name {
+      font-family: var(--round); font-size: 1.4rem; font-weight: 800;
+      color: var(--dark); margin-bottom: .3rem;
+    }
+    .trk-card-client {
+      font-size: .78rem; color: var(--muted);
+      letter-spacing: .04em; margin-bottom: 2.5rem;
+    }
+    .trk-card-client span { color: var(--text); font-weight: 600; }
+    .trk-delivery {
+      margin-top: 1.5rem; padding-top: 1.25rem;
+      border-top: 1px solid var(--bordersub);
+      display: none;
+    }
+    .trk-delivery.visible { display: block; }
+    .trk-delivery-date {
+      font-size: .72rem; color: var(--muted);
+      letter-spacing: .05em; text-transform: uppercase; margin-bottom: .55rem;
+    }
+    .trk-delivery-date strong { color: var(--text); font-weight: 700; }
+    .trk-status-chip {
+      display: inline-flex; align-items: center; gap: .45rem;
+      padding: .35rem .85rem; border-radius: 100px;
+      font-size: .72rem; font-weight: 600; letter-spacing: .04em;
+    }
+    .trk-status-chip.on-track {
+      background: rgba(39,174,96,.1); color: #1e8449;
+    }
+    .trk-status-chip.delayed {
+      background: rgba(230,126,34,.12); color: #a04000;
+    }
+    .trk-delay-reason {
+      margin-top: .6rem; font-size: .78rem;
+      color: var(--muted); line-height: 1.5;
+      padding: .6rem .85rem; background: rgba(230,126,34,.07);
+      border-radius: 10px; border-left: 3px solid rgba(230,126,34,.4);
+    }
+
+    /* STEPS */
+    .trk-steps {
+      position: relative; display: flex;
+      justify-content: space-between; align-items: flex-start;
+    }
+    .trk-steps::before {
+      content: ''; position: absolute;
+      top: 14px; left: 14px; right: 14px;
+      height: 2px; background: var(--surf2); z-index: 0;
+    }
+    .trk-progress-line {
+      position: absolute; top: 14px; left: 14px;
+      height: 2px; background: var(--accent); z-index: 1;
+      transition: width .7s cubic-bezier(.4,0,.2,1);
+    }
+    .trk-step {
+      display: flex; flex-direction: column;
+      align-items: center; gap: .55rem;
+      position: relative; z-index: 2; flex: 1;
+    }
+    .trk-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--surf2); border: 2.5px solid var(--surf2);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .4s, border-color .4s, box-shadow .4s; flex-shrink: 0;
+    }
+    .trk-dot svg { width: 12px; height: 12px; stroke: white; fill: none; display: none; }
+    .trk-step.done .trk-dot { background: var(--accent); border-color: var(--accent); }
+    .trk-step.done .trk-dot svg { display: block; }
+    .trk-step.active .trk-dot {
+      background: var(--accent); border-color: var(--accent);
+      box-shadow: 0 0 0 6px rgba(235,180,120,.22);
+    }
+    .trk-step.active .trk-dot svg { display: block; }
+    .trk-step-label {
+      font-family: var(--sans); font-size: .55rem;
+      letter-spacing: .03em; text-align: center;
+      color: var(--faint); line-height: 1.3; max-width: 72px;
+    }
+    .trk-step.done .trk-step-label { color: var(--muted); }
+    .trk-step.active .trk-step-label { color: var(--accentdk); font-weight: 700; font-size: .6rem; }
+    .trk-current-label {
+      text-align: center; margin-top: 1.5rem;
+      font-family: var(--sans); font-size: .72rem;
+      letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    }
+    .trk-current-label strong { color: var(--accentdk); font-weight: 700; }
+    .trk-updated { text-align: right; font-size: .62rem; color: var(--faint); margin-top: 1.25rem; }
+
+    /* ADMIN TOGGLE */
+    .trk-admin-toggle {
+      display: block; margin: 3rem auto 0;
+      font-family: var(--sans); font-size: .62rem;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--faint); transition: color .2s;
+    }
+    .trk-admin-toggle:hover { color: var(--muted); }
+    .trk-admin-panel { max-width: min(1280px, 96vw); margin: 2rem auto 0; display: none; }
+    .trk-admin-panel.visible { display: block; }
+    .trk-admin-login {
+      max-width: 340px; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 1rem; align-items: stretch;
+    }
+    .trk-admin-login h3 {
+      font-family: var(--round); font-weight: 800;
+      color: var(--dark); font-size: 1.05rem; text-align: center;
+    }
+    .trk-admin-pw {
+      background: white; border: 1.5px solid var(--border);
+      border-radius: 10px; padding: .75rem 1rem;
+      font-family: var(--sans); font-size: .9rem;
+      color: var(--text); outline: none; transition: border-color .25s;
+    }
+    .trk-admin-pw:focus { border-color: var(--accent); }
+    .trk-admin-err { font-size: .72rem; color: #c0392b; text-align: center; }
+    .trk-admin-dash { display: none; }
+    .trk-admin-dash.visible { display: block; }
+    .trk-admin-top {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem;
+    }
+    .trk-admin-title { font-family: var(--round); font-weight: 800; color: var(--dark); font-size: 1.05rem; }
+    .trk-table-wrap {
+      background: white; border: 1.5px solid var(--border);
+      border-radius: 16px; overflow: auto;
+    }
+    .trk-table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+    .trk-table th {
+      text-align: left; font-family: var(--sans); font-size: .57rem;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: var(--muted); padding: .9rem 1.1rem;
+      border-bottom: 1.5px solid var(--border); font-weight: 600;
+    }
+    .trk-table td {
+      padding: .8rem 1.1rem; border-bottom: 1px solid var(--bordersub);
+      font-size: .82rem; color: var(--text); vertical-align: middle;
+    }
+    .trk-table tr:last-child td { border-bottom: none; }
+    .trk-table tr:hover td { background: var(--surf); }
+    .trk-code-chip {
+      font-family: 'Courier New', monospace;
+      background: var(--surf2); border-radius: 6px;
+      padding: .2rem .65rem; font-size: .8rem;
+      letter-spacing: .1em; color: var(--dark); font-weight: 700;
+      cursor: pointer; transition: background .2s; white-space: nowrap;
+    }
+    .trk-code-chip:hover { background: var(--accent); }
+    .trk-status-sel {
+      background: var(--surf); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: .35rem .6rem;
+      font-family: var(--sans); font-size: .78rem;
+      color: var(--text); outline: none; cursor: pointer;
+      transition: border-color .2s; max-width: 220px; width: 100%;
+    }
+    .trk-status-sel:focus { border-color: var(--accent); }
+    .trk-table input[type="text"],
+    .trk-table input[type="tel"] {
+      background: var(--surf); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: .35rem .6rem;
+      font-family: var(--sans); font-size: .82rem;
+      color: var(--text); outline: none; width: 100%; min-width: 110px;
+      transition: border-color .2s;
+    }
+    .trk-table input[type="text"]:focus,
+    .trk-table input[type="tel"]:focus { border-color: var(--accent); }
+    .trk-btn-notify {
+      background: none; border: 1.5px solid rgba(37,211,102,.35);
+      border-radius: 8px; padding: .3rem .65rem;
+      color: #1a9c5b; font-size: .72rem;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+      font-family: var(--sans);
+    }
+    .trk-btn-notify:hover { background: rgba(37,211,102,.1); border-color: rgba(37,211,102,.7); color: #128C7E; }
+    .trk-btn-del {
+      background: none; border: 1.5px solid rgba(192,57,43,.25);
+      border-radius: 8px; padding: .3rem .65rem;
+      color: rgba(192,57,43,.5); font-size: .72rem;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .trk-btn-del:hover { background: rgba(192,57,43,.07); border-color: rgba(192,57,43,.5); color: #c0392b; }
+    .trk-btn-add {
+      background: var(--accent); color: var(--dark);
+      border: none; border-radius: 10px; padding: .65rem 1.4rem;
+      font-family: var(--sans); font-size: .72rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      cursor: pointer; transition: background .25s, color .25s;
+    }
+    .trk-btn-add:hover { background: var(--accentdk); color: var(--cream); }
+    .trk-btn-logout {
+      background: none; border: 1.5px solid var(--border);
+      border-radius: 8px; padding: .5rem 1rem;
+      font-family: var(--sans); font-size: .68rem;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); cursor: pointer; transition: all .2s;
+    }
+    .trk-btn-logout:hover { border-color: var(--muted); color: var(--text); }
+    .trk-empty { text-align: center; padding: 3rem; color: var(--faint); font-size: .85rem; }
+
+    /* MODAL */
+    .trk-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(30,26,22,.55); backdrop-filter: blur(4px);
+      z-index: 900; align-items: center; justify-content: center;
+    }
+    .trk-modal-overlay.open { display: flex; }
+    .trk-modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2rem;
+      width: min(420px, 92vw); box-shadow: 0 24px 64px rgba(0,0,0,.18);
+    }
+    .trk-modal h3 {
+      font-family: var(--round); font-size: 1.05rem; font-weight: 700;
+      color: var(--text); margin: 0 0 1.4rem;
+    }
+    .trk-modal-field { margin-bottom: 1rem; }
+    .trk-modal-field label {
+      display: block; font-size: .7rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: .35rem;
+    }
+    .trk-modal-field input {
+      width: 100%; box-sizing: border-box;
+      background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: .65rem .9rem;
+      font-family: var(--sans); font-size: .88rem; color: var(--text);
+      outline: none; transition: border-color .2s;
+    }
+    .trk-modal-field input:focus { border-color: var(--accent); }
+    .trk-modal-actions {
+      display: flex; gap: .75rem; margin-top: 1.5rem; justify-content: flex-end;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: #2E2B28;
+      padding: 1.5rem clamp(1.5rem,5vw,4rem);
+      border-top: 1px solid rgba(255,255,255,.04);
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-logo img { height: 32px; opacity: .55; display: block; }
+    .footer-copy { font-size: .65rem; color: rgba(235,231,223,.2); }
+
+    @media (max-width: 600px) {
+      .trk-search { flex-direction: column; }
+      .trk-btn-search { border-radius: 12px; }
+      .trk-steps { flex-direction: column; align-items: flex-start; gap: .5rem; }
+      .trk-steps::before, .trk-progress-line { display: none; }
+      .trk-step { flex-direction: row; align-items: center; gap: .75rem; flex: none; width: 100%; }
+      .trk-step-label { text-align: left; max-width: none; font-size: .72rem; }
+      .trk-card { padding: 1.5rem; }
+    }
+
+    /* ── ADMIN (admin.html) ── */
+    :root { --card: var(--surf); }
+    .adm-google {
+      display: flex; align-items: center; justify-content: center; gap: .65rem;
+      background: white; border: 1.5px solid var(--border); border-radius: 10px;
+      padding: .75rem 1rem; font-family: var(--sans); font-size: .85rem;
+      font-weight: 600; color: var(--dark); transition: border-color .2s;
+    }
+    .adm-google:hover { border-color: var(--accent); }
+    .adm-google svg { width: 18px; height: 18px; }
+    .adm-who { font-size: .7rem; color: var(--muted); }
+    .adm-note {
+      background: rgba(235,180,120,.15); border: 1px solid rgba(168,103,47,.25);
+      border-radius: 10px; padding: .75rem 1rem; font-size: .78rem;
+      color: var(--text); margin-bottom: 1rem; display: none;
+    }
+    .adm-note.visible { display: block; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="index.html" class="nav-logo"><img src="images/logo/logo.png" alt="cachas house"></a>
+    <a href="seguimiento.html" class="nav-back">
+      <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+      ir a seguimiento
+    </a>
+  </nav>
+
+  <main class="page">
+    <div class="page-head">
+      <div><span class="s-label">administración</span></div>
+      <h1 class="s-title">Panel de <em>proyectos</em></h1>
+    </div>
+
+    <div class="trk-admin-panel visible">
+      <div class="trk-admin-login" id="adm-login">
+        <h3>acceso administrador</h3>
+        <button class="adm-google" id="adm-google" type="button">
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+          Entrar con Google
+        </button>
+        <div class="trk-admin-err" id="adm-err"></div>
+      </div>
+
+      <div class="trk-admin-dash" id="trk-admin-dash">
+        <div class="adm-note" id="adm-note"></div>
+        <div class="trk-admin-top">
+          <div>
+            <span class="trk-admin-title">proyectos activos</span><br>
+            <span class="adm-who" id="adm-who"></span>
+          </div>
+          <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap">
+            <button class="trk-btn-logout" id="adm-migrate" style="display:none">migrar teléfonos</button>
+            <button class="trk-btn-add" id="trk-add-project">+ agregar proyecto</button>
+            <button class="trk-btn-logout" id="trk-logout">cerrar sesión</button>
+          </div>
+        </div>
+        <div class="trk-table-wrap">
+          <table class="trk-table">
+            <thead>
+              <tr>
+                <th>código</th>
+                <th>cliente</th>
+                <th>proyecto</th>
+                <th>teléfono</th>
+                <th>estado</th>
+                <th>fecha entrega</th>
+                <th>razón retraso</th>
+                <th>actualizado</th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="trk-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="trk-modal-overlay" id="trk-modal-overlay">
+    <div class="trk-modal">
+      <h3>nuevo proyecto</h3>
+      <div class="trk-modal-field">
+        <label>nombre del cliente</label>
+        <input type="text" id="modal-client" placeholder="Ej. Juan García" autocomplete="off">
+      </div>
+      <div class="trk-modal-field">
+        <label>nombre del proyecto</label>
+        <input type="text" id="modal-project" placeholder="Ej. Cocina integral">
+      </div>
+      <div class="trk-modal-field">
+        <label>teléfono WhatsApp</label>
+        <input type="tel" id="modal-phone" placeholder="+57 300 000 0000">
+      </div>
+      <div class="trk-modal-field">
+        <label>fecha de entrega estimada</label>
+        <input type="date" id="modal-delivery">
+      </div>
+      <div class="trk-modal-actions">
+        <button class="trk-btn-logout" id="modal-cancel">cancelar</button>
+        <button class="trk-btn-add" id="modal-confirm">crear proyecto</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span class="footer-logo"><img src="images/LOGO-VERSION1(4).png" alt="cachas house"></span>
+    <span class="footer-copy">© 2025 cachas house. todos los derechos reservados.</span>
+  </footer>
+
+<script>
+(function() {
+  const { db, auth, STAGES, esc } = CH;
+  const DB_PATH   = 'cachas-projects';   // público por código (lo lee el cliente)
+  const PRIV_PATH = 'cachas-private';    // solo admin (teléfonos)
+
+  const $ = id => document.getElementById(id);
+  const loginBox   = $('adm-login');
+  const loginErr   = $('adm-err');
+  const trkAdminDash = $('trk-admin-dash');
+  const trkTbody   = $('trk-tbody');
+  const note       = $('adm-note');
+  const migrateBtn = $('adm-migrate');
+
+  let projects = {}, priv = {}, listeners = [];
+
+  /* ─── LOGIN (Google) ─── */
+  $('adm-google').addEventListener('click', async () => {
+    loginErr.textContent = '';
+    try {
+      await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    } catch (e) {
+      if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+        loginErr.textContent = 'No se pudo iniciar sesión (' + (e.code || e.message) + ').';
+      }
+    }
+  });
+
+  auth.onAuthStateChanged(async user => {
+    stopLive();
+    if (!user) { showLogin(''); return; }
+    if (!CH.isAdminUser(user)) {
+      const email = user.email;
+      await auth.signOut();
+      showLogin('La cuenta ' + email + ' no tiene permisos de administrador.');
+      return;
+    }
+    $('adm-who').textContent = user.email;
+    loginBox.style.display = 'none';
+    trkAdminDash.classList.add('visible');
+    startLive();
+  });
+
+  function showLogin(msg) {
+    trkAdminDash.classList.remove('visible');
+    loginBox.style.display = '';
+    loginErr.textContent = msg || '';
+  }
+
+  $('trk-logout').addEventListener('click', () => auth.signOut());
+
+  /* ─── DATOS EN VIVO ─── */
+  function startLive() {
+    const r1 = db.ref(DB_PATH), r2 = db.ref(PRIV_PATH);
+    const h1 = r1.on('value', s => { projects = s.val() || {}; renderTable(); },
+      e => showNote('No se pudieron leer los proyectos (' + e.code + '). ¿Están publicadas las reglas nuevas?'));
+    const h2 = r2.on('value', s => { priv = s.val() || {}; renderTable(); },
+      () => showNote('Aún no se pueden leer los teléfonos privados: publica las reglas nuevas en Firebase.'));
+    listeners = [[r1, h1], [r2, h2]];
+  }
+  function stopLive() {
+    listeners.forEach(([r, h]) => r.off('value', h));
+    listeners = []; projects = {}; priv = {};
+  }
+  function showNote(msg) { note.textContent = msg; note.classList.add('visible'); }
+
+  /* teléfono: primero el nodo privado; si no, el campo viejo (antes de migrar) */
+  const phoneOf = code => (priv[code] && priv[code].phone) || (projects[code] && projects[code].phone) || '';
+
+  function genCode() {
+    const L = 'ABCDEFGHJKLMNPQRSTUVWXYZ', D = '0123456789';
+    let c;
+    do {
+      c = '';
+      for (let i = 0; i < 3; i++) c += L[Math.floor(Math.random() * L.length)];
+      c += '-';
+      for (let i = 0; i < 3; i++) c += D[Math.floor(Math.random() * D.length)];
+    } while (projects[c]);
+    return c;
+  }
+
+  function renderTable() {
+    const keys = Object.keys(projects);
+    migrateBtn.style.display = keys.some(k => projects[k] && projects[k].phone) ? '' : 'none';
+    if (keys.length === 0) {
+      trkTbody.innerHTML = '<tr><td colspan="10" class="trk-empty">No hay proyectos aún. Agrega el primero.</td></tr>';
+      return;
+    }
+    trkTbody.innerHTML = '';
+    keys.forEach(code => {
+      const p = projects[code];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="trk-code-chip" title="Copiar código" data-copy="${esc(code)}">${esc(code)}</span></td>
+        <td><input type="text" value="${esc(p.client||'')}" data-code="${esc(code)}" data-field="client" placeholder="Nombre cliente"></td>
+        <td><input type="text" value="${esc(p.project||'')}" data-code="${esc(code)}" data-field="project" placeholder="Nombre proyecto"></td>
+        <td><input type="tel" value="${esc(phoneOf(code))}" data-code="${esc(code)}" data-field="phone" placeholder="+57 300 0000000"></td>
+        <td>
+          <select class="trk-status-sel" data-code="${esc(code)}">
+            ${STAGES.map((s,i) => `<option value="${i}"${p.status==i?' selected':''}>${s}</option>`).join('')}
+          </select>
+        </td>
+        <td><input type="date" value="${esc(p.deliveryDate||'')}" data-code="${esc(code)}" data-field="deliveryDate"></td>
+        <td><input type="text" value="${esc(p.delayReason||'')}" data-code="${esc(code)}" data-field="delayReason" placeholder="razón del retraso…"></td>
+        <td style="white-space:nowrap">${p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+        <td><button class="trk-btn-notify" data-code="${esc(code)}" title="Notificar cliente por WhatsApp">WhatsApp</button></td>
+        <td><button class="trk-btn-del" data-code="${esc(code)}">eliminar</button></td>`;
+      trkTbody.appendChild(tr);
+    });
+
+    trkTbody.querySelectorAll('.trk-code-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        navigator.clipboard.writeText(chip.dataset.copy).then(() => {
+          const orig = chip.textContent;
+          chip.textContent = '✓ copiado';
+          setTimeout(() => chip.textContent = orig, 1500);
+        });
+      });
+    });
+    trkTbody.querySelectorAll('input[type="text"], input[type="tel"], input[type="date"]').forEach(inp => {
+      inp.addEventListener('blur', () => {
+        const code = inp.dataset.code, field = inp.dataset.field, val = inp.value.trim();
+        if (field === 'phone') {
+          if (val === phoneOf(code)) return;
+          db.ref(PRIV_PATH + '/' + code + '/phone').set(val)
+            .catch(e => alert('No se pudo guardar el teléfono (' + e.code + ').'));
+          return;
+        }
+        db.ref(DB_PATH + '/' + code + '/' + field).set(val)
+          .catch(e => alert('No se pudo guardar (' + e.code + ').'));
+      });
+    });
+    trkTbody.querySelectorAll('.trk-status-sel').forEach(sel => {
+      sel.addEventListener('change', () => {
+        db.ref(DB_PATH + '/' + sel.dataset.code).update({
+          status: parseInt(sel.value),
+          updatedAt: new Date().toISOString(),
+        });
+      });
+    });
+    trkTbody.querySelectorAll('.trk-btn-notify').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const code = btn.dataset.code;
+        const row  = btn.closest('tr');
+        const phone = row.querySelector('input[data-field="phone"]').value.trim().replace(/\s+/g, '');
+        if (!phone) { alert('Agrega el teléfono del cliente primero.'); return; }
+        const client    = row.querySelector('input[data-field="client"]').value.trim() || 'Cliente';
+        const project   = row.querySelector('input[data-field="project"]').value.trim() || 'tu proyecto';
+        const currentIdx = parseInt(row.querySelector('.trk-status-sel').value);
+        const link = CH.SITE_URL + '/seguimiento.html?code=' + code;
+        const digits = phone.replace(/^\+/, '');
+
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+        const deliveryDateRaw = row.querySelector('input[data-field="deliveryDate"]').value;
+        const delayReason     = row.querySelector('input[data-field="delayReason"]').value.trim();
+
+        let progressLines, deliveryLine, msg;
+
+        if (isMobile) {
+          const ic = {
+            house:  String.fromCodePoint(0x1F3E0),
+            box:    String.fromCodePoint(0x1F4E6),
+            check:  String.fromCodePoint(0x2705),
+            spin:   String.fromCodePoint(0x1F504),
+            empty:  String.fromCodePoint(0x2B1C),
+            link:   String.fromCodePoint(0x1F517),
+            warn:   String.fromCodePoint(0x26A0),
+            line:   String.fromCodePoint(0x2501).repeat(18),
+          };
+          progressLines = STAGES.map((s, i) => {
+            if (i < currentIdx)   return ic.check + ' ' + s;
+            if (i === currentIdx) return ic.spin  + ' *' + s + '*';
+            return ic.empty + ' ' + s;
+          }).join('\n');
+          deliveryLine = '';
+          if (deliveryDateRaw) {
+            const dFmt = new Date(deliveryDateRaw + 'T12:00:00').toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+            deliveryLine = '\n*Entrega estimada:* ' + dFmt + '\n' +
+              (delayReason ? ic.warn + ' *Actualizacion de plazo:* ' + delayReason : ic.check + ' Seguimos on track');
+          }
+          msg = ic.house + ' *CACHAS HOUSE*\n' + ic.line + '\n' +
+            ic.box + ' *Actualizacion de tu proyecto*\n\n' +
+            '*Cliente:* ' + client + '\n*Proyecto:* ' + project + '\n\n' +
+            '*Progreso:*\n' + progressLines + deliveryLine + '\n' +
+            ic.line + '\n' + ic.link + ' Ver tu seguimiento:\n' + link + '\n\n' +
+            '_Cachas House - Carpinteria arquitectonica_';
+        } else {
+          progressLines = STAGES.map((s, i) => {
+            if (i < currentIdx)   return '~' + s + '~';
+            if (i === currentIdx) return '*' + s + '*';
+            return s;
+          }).join('\n');
+          deliveryLine = '';
+          if (deliveryDateRaw) {
+            const dFmt = new Date(deliveryDateRaw + 'T12:00:00').toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' });
+            deliveryLine = '\n*Entrega estimada:* ' + dFmt + '\n' +
+              (delayReason ? '⚠ *Actualizacion de plazo:* ' + delayReason : '✓ Seguimos on track');
+          }
+          msg = '*CACHAS HOUSE*\n*Actualizacion de tu proyecto*\n\n' +
+            '*Cliente:* ' + client + '\n*Proyecto:* ' + project + '\n\n' +
+            '*Progreso:*\n' + progressLines + deliveryLine + '\n\n' +
+            '*Ver tu seguimiento:*\n' + link + '\n\n' +
+            '_Cachas House - Carpinteria arquitectonica_';
+        }
+
+        window.open('https://wa.me/' + digits + '?text=' + encodeURIComponent(msg), '_blank');
+      });
+    });
+    trkTbody.querySelectorAll('.trk-btn-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const code = btn.dataset.code;
+        if (confirm('¿Eliminar el proyecto ' + code + '?')) {
+          db.ref().update({ [DB_PATH + '/' + code]: null, [PRIV_PATH + '/' + code]: null });
+        }
+      });
+    });
+  }
+
+  /* ─── MIGRACIÓN: teléfonos → cachas-private (una sola vez) ─── */
+  migrateBtn.addEventListener('click', async () => {
+    const up = {};
+    Object.keys(projects).forEach(code => {
+      const ph = projects[code] && projects[code].phone;
+      if (ph) {
+        if (!(priv[code] && priv[code].phone)) up[PRIV_PATH + '/' + code + '/phone'] = ph;
+        up[DB_PATH + '/' + code + '/phone'] = null;
+      }
+    });
+    const n = Object.keys(up).filter(k => k.startsWith(DB_PATH)).length;
+    if (!n || !confirm('Mover ' + n + ' teléfono(s) al nodo privado?')) return;
+    try { await db.ref().update(up); alert('Listo: ' + n + ' teléfono(s) migrados.'); }
+    catch (e) { alert('No se pudo migrar (' + e.code + '). ¿Están publicadas las reglas nuevas?'); }
+  });
+
+  /* ─── MODAL NUEVO PROYECTO ─── */
+  const modalOverlay  = $('trk-modal-overlay');
+  const modalClient   = $('modal-client');
+  const modalProject  = $('modal-project');
+  const modalPhone    = $('modal-phone');
+  const modalDelivery = $('modal-delivery');
+
+  function openModal() {
+    modalClient.value = ''; modalProject.value = ''; modalPhone.value = ''; modalDelivery.value = '';
+    modalOverlay.classList.add('open');
+    setTimeout(() => modalClient.focus(), 80);
+  }
+  function closeModal() { modalOverlay.classList.remove('open'); }
+
+  $('trk-add-project').addEventListener('click', openModal);
+  $('modal-cancel').addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+
+  function createProject() {
+    const client       = modalClient.value.trim() || 'Nuevo cliente';
+    const project      = modalProject.value.trim() || 'Nuevo proyecto';
+    const phone        = modalPhone.value.trim();
+    const deliveryDate = modalDelivery.value;
+    const code         = genCode();
+    const up = {};
+    up[DB_PATH + '/' + code] = {
+      client, project, deliveryDate,
+      delayReason: '',
+      status: 0,
+      updatedAt: new Date().toISOString(),
+    };
+    if (phone) up[PRIV_PATH + '/' + code + '/phone'] = phone;
+    db.ref().update(up).catch(e => alert('No se pudo crear (' + e.code + ').'));
+    closeModal();
+  }
+
+  $('modal-confirm').addEventListener('click', createProject);
+  [modalClient, modalProject, modalPhone].forEach(inp => {
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') createProject(); });
+  });
+})();
+</script>
+</body>
+</html>

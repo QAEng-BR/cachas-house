@@ -1,0 +1,15 @@
+{
+  "rules": {
+    "cachas-projects": {
+      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')",
+      "$code": {
+        ".read": true,
+        ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')"
+      }
+    },
+    "cachas-private": {
+      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')",
+      ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')"
+    }
+  }
+}

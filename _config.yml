@@ -1,0 +1,6 @@
+# GitHub Pages (Jekyll): archivos del repo que NO se publican en cachashouse.com.
+# Sin esto, Jekyll convierte los .md en páginas públicas.
+exclude:
+  - CLAUDE.md
+  - docs/
+  - firebase/
