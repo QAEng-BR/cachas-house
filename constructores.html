@@ -124,6 +124,15 @@
       padding: .9rem 1rem; font-size: 1.05rem; color: var(--dark); outline: none;
     }
     .field .hint { font-size: .8rem; color: var(--muted); margin-top: .3rem; }
+    .tools { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .tool {
+      display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; text-align: left;
+      background: white; border: 2px solid var(--border); border-radius: 16px; padding: 1rem; min-height: 130px;
+    }
+    .tool:active { border-color: var(--accent); }
+    .tool-ico { font-size: 1.9rem; line-height: 1; margin-bottom: .35rem; }
+    .tool-name { font-weight: 700; color: var(--dark); font-size: 1rem; line-height: 1.2; }
+    .tool-desc { font-size: .8rem; color: var(--muted); line-height: 1.3; }
     .lb { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 50; display: none; align-items: center; justify-content: center; }
     .lb.on { display: flex; }
     .lb img { max-width: 100%; max-height: 100%; }
@@ -161,15 +170,20 @@
     <!-- INICIO: proyectos / por revisar -->
     <section id="v-home" class="hidden">
       <h1 id="hello">Hola</h1>
-      <p class="sub">Elige el proyecto para subir un avance.</p>
-      <div class="tabs hidden" id="tabs">
+      <p class="sub">Elige un proyecto para subir un avance, o abre Tools.</p>
+      <div class="tabs" id="tabs">
         <button class="tab on" data-tab="projects" type="button">Proyectos</button>
-        <button class="tab" data-tab="review" type="button">Por revisar <span class="badge" id="pending-count">0</span></button>
+        <button class="tab hidden boss-only" data-tab="review" type="button">Revisar <span class="badge" id="pending-count">0</span></button>
+        <button class="tab" data-tab="tools" type="button">🛠️ Tools</button>
       </div>
       <div id="t-projects">
         <button class="btn btn-ghost hidden boss-only" type="button" id="btn-new-project" style="margin:0 0 .9rem">＋ Nuevo proyecto</button>
         <input class="search" id="search" type="search" placeholder="Buscar proyecto o cliente">
         <div id="project-list"></div>
+      </div>
+      <div id="t-tools" class="hidden">
+        <p class="sub" style="margin-bottom:.9rem">Herramientas de diseño y taller.</p>
+        <div class="tools" id="tools-grid"></div>
       </div>
       <div id="t-review" class="hidden">
         <div id="review-list"></div>
@@ -220,6 +234,16 @@
       <div class="err" id="e-err"></div>
     </section>
 
+    <!-- HERRAMIENTA EN CONSTRUCCIÓN -->
+    <section id="v-soon" class="hidden">
+      <button class="top-btn" type="button" id="soon-back">← tools</button>
+      <div class="done">
+        <div class="done-ico" id="soon-ico">🛠️</div>
+        <h1 id="soon-name"></h1>
+        <p class="sub">🚧 En construcción. Muy pronto estará disponible.</p>
+      </div>
+    </section>
+
     <!-- ENVIADO -->
     <section id="v-sent" class="hidden">
       <div class="done">
@@ -257,7 +281,7 @@
   const PHOTO_TTL_DAYS = 30;
   const MAX_PHOTOS = 8;
   const $ = id => document.getElementById(id);
-  const views = ['login', 'home', 'project', 'new', 'sent', 'approved', 'edit'];
+  const views = ['login', 'home', 'project', 'new', 'sent', 'approved', 'edit', 'soon'];
 
   let me = null;              // { uid, username, name, role }
   let projects = {};          // código → proyecto
@@ -314,7 +338,6 @@
     }
     $('btn-logout').classList.remove('hidden');
     $('hello').textContent = 'Hola, ' + String(me.name || me.username).split(' ')[0];
-    $('tabs').classList.toggle('hidden', me.role !== 'supervisor');
     document.querySelectorAll('.boss-only').forEach(el => el.classList.toggle('hidden', me.role !== 'supervisor'));
     listen('cachas-projects', v => { projects = v || {}; renderProjects(); if (current && !$('v-project').classList.contains('hidden')) renderProject(); });
     let cleaned = false;
@@ -586,7 +609,34 @@
     document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
     $('t-projects').classList.toggle('hidden', t.dataset.tab !== 'projects');
     $('t-review').classList.toggle('hidden', t.dataset.tab !== 'review');
+    $('t-tools').classList.toggle('hidden', t.dataset.tab !== 'tools');
   }));
+
+  /* ─── TOOLS: herramientas de diseño (por ahora en construcción) ─── */
+  const TOOLS = [
+    { id: 'puertas',   icon: '🚪', name: 'Calculadora de puertas',   desc: 'Medidas de puertas según el hueco' },
+    { id: 'cortes',    icon: '🪚', name: 'Optimizador de cortes',    desc: 'Cuántas láminas y cómo cortarlas' },
+    { id: 'despiece',  icon: '🧩', name: 'Despiece de módulos',      desc: 'Piezas de muebles bajos, altos y closets' },
+    { id: 'cajones',   icon: '🗄️', name: 'Calculadora de cajones',   desc: 'Frentes, laterales y fondos' },
+    { id: 'repisas',   icon: '📚', name: 'Repisas y entrepaños',     desc: 'Cantidad y medidas por espacio' },
+    { id: 'canto',     icon: '📏', name: 'Metros de canto',          desc: 'Tapacanto por pieza y total' },
+    { id: 'herrajes',  icon: '🔩', name: 'Herrajes',                 desc: 'Bisagras, correderas y manijas' },
+    { id: 'costos',    icon: '💲', name: 'Costo de materiales',      desc: 'Láminas, canto y herrajes' },
+  ];
+  const toolsGrid = $('tools-grid');
+  TOOLS.forEach(t => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tool';
+    b.innerHTML = `<span class="tool-ico">${t.icon}</span><span class="tool-name">${esc(t.name)}</span><span class="tool-desc">${esc(t.desc)}</span>`;
+    b.addEventListener('click', () => openTool(t));
+    toolsGrid.appendChild(b);
+  });
+  $('soon-back').addEventListener('click', () => show('home'));
+  function openTool(t) {
+    $('soon-ico').textContent = t.icon;
+    $('soon-name').textContent = t.name;
+    show('soon');
+  }
 
   function pendingList() {
     const out = [];
