@@ -8,6 +8,7 @@
   <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>cachas house — artesanía en madera</title>
+  <link rel="preload" as="image" href="images/Fondo.jpg" fetchpriority="high">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1176,7 +1177,7 @@
   <!-- Parallax photo background -->
   <div class="hpx-bg" id="hpx-bg">
     <div class="hpx-layer hpx-layer-1" data-depth="0.35">
-      <img src="images/Fondo.png" alt="" aria-hidden="true">
+      <img src="images/Fondo.jpg" alt="" aria-hidden="true" fetchpriority="high" decoding="async">
     </div>
     <div class="hpx-overlay"></div>
   </div>
@@ -1583,7 +1584,7 @@ const HERO_IMGS = [
   const slides = HERO_IMGS.map((h, i) => {
     const s = document.createElement('div');
     s.className = 'hero-imgshow-slide' + (i === 0 ? ' on' : '');
-    s.innerHTML = `<img src="${h.img}" alt="${h.label}" loading="${i === 0 ? 'eager' : 'lazy'}">`;
+    s.innerHTML = i < 2 ? `<img src="${h.img}" alt="${h.label}" decoding="async">` : `<img data-src="${h.img}" alt="${h.label}" decoding="async">`;
     card.insertBefore(s, card.querySelector('.hero-imgshow-foot'));
     const d = document.createElement('div');
     d.className = 'hero-imgshow-dot' + (i === 0 ? ' on' : '');
@@ -1597,6 +1598,9 @@ const HERO_IMGS = [
     dots[hIdx].classList.remove('on');
     hIdx = (hIdx + 1) % slides.length;
     slides[hIdx].classList.add('on');
+    /* precarga la siguiente para que el cambio sea suave */
+    const nx = slides[(hIdx + 1) % slides.length].querySelector('img[data-src]');
+    if (nx) { nx.src = nx.dataset.src; nx.removeAttribute('data-src'); }
     dots[hIdx].classList.add('on');
     label.textContent = HERO_IMGS[hIdx].label;
   }
@@ -1654,11 +1658,21 @@ function carUpdateOverlay() {
   gcarCounter.textContent = `${carIdx + 1} / ${visibleItems.length}`;
 }
 
+/* carga solo la foto actual, la siguiente y la anterior (antes se bajaban las 67 de golpe) */
+function carLoad(idx) {
+  const slides = gcarTrack.querySelectorAll('.gcar-slide');
+  [idx, idx + 1, idx - 1].forEach(k => {
+    const img = slides[(k + slides.length) % slides.length]?.querySelector('img[data-src]');
+    if (img) { img.src = img.dataset.src; img.removeAttribute('data-src'); }
+  });
+}
+
 function carGoTo(idx) {
   const slides = gcarTrack.querySelectorAll('.gcar-slide');
   if (!slides.length) return;
   slides[carIdx]?.classList.remove('on');
   carIdx = (idx + visibleItems.length) % visibleItems.length;
+  carLoad(carIdx);
   slides[carIdx]?.classList.add('on');
   carUpdateOverlay();
   carResetBar();
@@ -1685,7 +1699,7 @@ function renderCarousel(filter = 'all') {
   visibleItems.forEach((item, i) => {
     const s = document.createElement('div');
     s.className = 'gcar-slide' + (i === 0 ? ' on' : '');
-    s.innerHTML = `<img src="${item.img}" alt="${item.catLabel}" loading="${i < 3 ? 'eager' : 'lazy'}">`;
+    s.innerHTML = `<img data-src="${item.img}" alt="${item.catLabel}" decoding="async">`;
     gcarTrack.appendChild(s);
   });
   carUpdateOverlay();
@@ -1694,6 +1708,9 @@ function renderCarousel(filter = 'all') {
   carStartAuto();
 }
 renderCarousel();
+/* no descargar fotos del portafolio hasta que la galería esté cerca de la pantalla */
+new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { carLoad(carIdx); o.disconnect(); } }, { rootMargin: '600px' })
+  .observe(document.getElementById('galeria'));
 
 /* Touch swipe on carousel */
 let carTouchX = 0;
