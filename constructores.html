@@ -124,6 +124,17 @@
       padding: .9rem 1rem; font-size: 1.05rem; color: var(--dark); outline: none;
     }
     .field .hint { font-size: .8rem; color: var(--muted); margin-top: .3rem; }
+    .menu { display: flex; flex-direction: column; gap: .85rem; }
+    .menu-btn {
+      display: flex; align-items: center; gap: 1rem; width: 100%; text-align: left;
+      background: white; border: 2px solid var(--border); border-radius: 20px;
+      padding: 1.25rem 1.2rem; min-height: 96px;
+    }
+    .menu-btn:active { border-color: var(--accent); transform: scale(.99); }
+    .menu-ico { font-size: 2.4rem; line-height: 1; flex: 0 0 auto; }
+    .menu-btn b { display: block; font-size: 1.2rem; color: var(--dark); }
+    .menu-btn small { display: block; font-size: .9rem; color: var(--muted); margin-top: .15rem; }
+    #menu-back { margin: 0 0 .25rem; }
     .tools { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
     .tool {
       display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; text-align: left;
@@ -169,14 +180,15 @@
 
     <!-- INICIO: proyectos / por revisar -->
     <section id="v-home" class="hidden">
+      <button class="top-btn hidden" type="button" id="menu-back">← menú</button>
       <h1 id="hello">Hola</h1>
-      <p class="sub">Elige un proyecto para subir un avance, o abre Tools.</p>
-      <div class="tabs" id="tabs">
-        <button class="tab on" data-tab="projects" type="button">Proyectos</button>
-        <button class="tab hidden boss-only" data-tab="review" type="button">Revisar <span class="badge" id="pending-count">0</span></button>
-        <button class="tab" data-tab="tools" type="button">🛠️ Tools</button>
+      <p class="sub" id="home-sub">¿Qué quieres hacer?</p>
+      <div class="menu" id="menu">
+        <button class="menu-btn" data-tab="projects" type="button"><span class="menu-ico">📋</span><span><b>Proyectos</b><small>Subir fotos y avances</small></span></button>
+        <button class="menu-btn hidden boss-only" data-tab="review" type="button"><span class="menu-ico">✅</span><span><b>Revisar <span class="badge" id="pending-count">0</span></b><small>Aprobar o devolver avances</small></span></button>
+        <button class="menu-btn" data-tab="tools" type="button"><span class="menu-ico">🛠️</span><span><b>Tools</b><small>Herramientas de diseño y taller</small></span></button>
       </div>
-      <div id="t-projects">
+      <div id="t-projects" class="hidden">
         <button class="btn btn-ghost hidden boss-only" type="button" id="btn-new-project" style="margin:0 0 .9rem">＋ Nuevo proyecto</button>
         <input class="search" id="search" type="search" placeholder="Buscar proyecto o cliente">
         <div id="project-list"></div>
@@ -349,6 +361,7 @@
     });
     listen('config', v => { config = v || {}; });
     show('home');
+    openSection(null);
   });
 
   function listen(path, cb) {
@@ -605,12 +618,20 @@
   });
 
   /* ─── REVISIÓN (jefe) ─── */
-  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
-    $('t-projects').classList.toggle('hidden', t.dataset.tab !== 'projects');
-    $('t-review').classList.toggle('hidden', t.dataset.tab !== 'review');
-    $('t-tools').classList.toggle('hidden', t.dataset.tab !== 'tools');
-  }));
+  /* menú principal con botones grandes → cada botón abre su sección */
+  const SECTION_TITLES = { projects: 'Proyectos', review: 'Revisar avances', tools: 'Tools' };
+  function openSection(tab) {
+    const inMenu = !tab;
+    $('menu').classList.toggle('hidden', !inMenu);
+    $('menu-back').classList.toggle('hidden', inMenu);
+    ['projects', 'review', 'tools'].forEach(k => $('t-' + k).classList.toggle('hidden', k !== tab));
+    $('hello').textContent = inMenu ? 'Hola, ' + String((me && (me.name || me.username)) || '').split(' ')[0] : SECTION_TITLES[tab];
+    $('home-sub').textContent = inMenu ? '¿Qué quieres hacer?' : '';
+    $('home-sub').classList.toggle('hidden', !inMenu);
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('.menu-btn').forEach(b => b.addEventListener('click', () => openSection(b.dataset.tab)));
+  $('menu-back').addEventListener('click', () => openSection(null));
 
   /* ─── TOOLS: herramientas de diseño (por ahora en construcción) ─── */
   const TOOLS = [
@@ -746,7 +767,7 @@
   $('btn-share').addEventListener('click', async () => {
     try { await navigator.share({ files: shareFiles }); } catch (e) { /* cancelado */ }
   });
-  $('btn-back-review').addEventListener('click', () => { show('home'); document.querySelector('.tab[data-tab="review"]').click(); });
+  $('btn-back-review').addEventListener('click', () => { show('home'); openSection('review'); });
 
   /* Limpieza (plan gratis, sin servidor): el jefe borra al entrar las fotos con más de 30 días */
   async function cleanupExpired() {
