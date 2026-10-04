@@ -4,12 +4,18 @@
       ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && (root.child('users/' + auth.uid + '/role').val() === 'constructor' || root.child('users/' + auth.uid + '/role').val() === 'supervisor') && root.child('users/' + auth.uid + '/active').val() === true)",
       "$code": {
         ".read": true,
-        ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))"
+        ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || ((auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true) && newData.exists())"
       }
     },
     "cachas-private": {
       ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)",
-      ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))"
+      ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))",
+      "$code": {
+        ".write": "(auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true) && newData.exists()",
+        "phone": {
+          ".write": "(auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)"
+        }
+      }
     },
     "users": {
       ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))",

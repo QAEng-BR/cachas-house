@@ -119,6 +119,11 @@
     .progress div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
     .tip { margin-top: 2rem; font-size: .85rem; color: var(--muted); text-align: center; }
 
+    .field select {
+      width: 100%; background: white; border: 2px solid var(--border); border-radius: 14px;
+      padding: .9rem 1rem; font-size: 1.05rem; color: var(--dark); outline: none;
+    }
+    .field .hint { font-size: .8rem; color: var(--muted); margin-top: .3rem; }
     .lb { position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 50; display: none; align-items: center; justify-content: center; }
     .lb.on { display: flex; }
     .lb img { max-width: 100%; max-height: 100%; }
@@ -162,6 +167,7 @@
         <button class="tab" data-tab="review" type="button">Por revisar <span class="badge" id="pending-count">0</span></button>
       </div>
       <div id="t-projects">
+        <button class="btn btn-ghost hidden boss-only" type="button" id="btn-new-project" style="margin:0 0 .9rem">＋ Nuevo proyecto</button>
         <input class="search" id="search" type="search" placeholder="Buscar proyecto o cliente">
         <div id="project-list"></div>
       </div>
@@ -176,6 +182,7 @@
       <h1 id="p-name"></h1>
       <p class="sub"><span id="p-client"></span><br><span class="stage" id="p-stage"></span></p>
       <button class="btn" type="button" id="btn-new">📷 Subir avance</button>
+      <button class="btn btn-ghost hidden boss-only" type="button" id="btn-edit-project">✏️ Editar proyecto</button>
       <h2>Avances enviados</h2>
       <div id="p-updates"></div>
     </section>
@@ -195,6 +202,22 @@
       <button class="btn btn-dark" type="button" id="btn-send">Enviar avance</button>
       <div class="progress hidden" id="n-progress"><div></div></div>
       <div class="err" id="n-err"></div>
+    </section>
+
+    <!-- EDITAR / CREAR PROYECTO (solo jefe) -->
+    <section id="v-edit" class="hidden">
+      <button class="top-btn" type="button" id="e-back">← volver</button>
+      <h1 id="e-title">Editar proyecto</h1>
+      <p class="sub" id="e-code"></p>
+      <div class="field"><label for="e-project">Proyecto</label><input id="e-project" type="text" maxlength="120" placeholder="Ej. Cocina integral"></div>
+      <div class="field"><label for="e-client">Cliente</label><input id="e-client" type="text" maxlength="80" placeholder="Ej. Juan García"></div>
+      <div class="field"><label for="e-phone">WhatsApp del cliente</label><input id="e-phone" type="tel" placeholder="+57 300 000 0000"></div>
+      <div class="field"><label for="e-stage">Etapa</label><select id="e-stage"></select></div>
+      <div class="field"><label for="e-delivery">Entrega estimada</label><input id="e-delivery" type="date"></div>
+      <div class="field"><label for="e-delay">Razón del retraso</label><input id="e-delay" type="text" maxlength="200" placeholder="Vacío = seguimos a tiempo"><p class="hint">Si escribes algo, el cliente verá "actualización de plazo".</p></div>
+      <button class="btn btn-dark" type="button" id="e-save">Guardar</button>
+      <a class="btn btn-wa hidden" id="e-notify" target="_blank" rel="noopener">Avisar al cliente por WhatsApp</a>
+      <div class="err" id="e-err"></div>
     </section>
 
     <!-- ENVIADO -->
@@ -234,7 +257,7 @@
   const PHOTO_TTL_DAYS = 30;
   const MAX_PHOTOS = 8;
   const $ = id => document.getElementById(id);
-  const views = ['login', 'home', 'project', 'new', 'sent', 'approved'];
+  const views = ['login', 'home', 'project', 'new', 'sent', 'approved', 'edit'];
 
   let me = null;              // { uid, username, name, role }
   let projects = {};          // código → proyecto
@@ -292,6 +315,7 @@
     $('btn-logout').classList.remove('hidden');
     $('hello').textContent = 'Hola, ' + String(me.name || me.username).split(' ')[0];
     $('tabs').classList.toggle('hidden', me.role !== 'supervisor');
+    document.querySelectorAll('.boss-only').forEach(el => el.classList.toggle('hidden', me.role !== 'supervisor'));
     listen('cachas-projects', v => { projects = v || {}; renderProjects(); if (current && !$('v-project').classList.contains('hidden')) renderProject(); });
     let cleaned = false;
     listen('updates', v => {
@@ -476,6 +500,84 @@
       show('sent');
     } catch (err) {
       $('n-err').textContent = 'No se pudo enviar (' + (err.code || err.message) + '). Revisa tu conexión e intenta de nuevo.';
+    } finally { btn.disabled = false; }
+  });
+
+  /* ─── CREAR / EDITAR PROYECTOS (jefe) ─── */
+  let editing = null;   // código en edición, o null si es nuevo
+  $('e-stage').innerHTML = STAGES.map((s, i) => `<option value="${i}">${i + 1}. ${esc(s)}</option>`).join('');
+  $('btn-new-project').addEventListener('click', () => openEdit(null));
+  $('btn-edit-project').addEventListener('click', () => openEdit(current));
+  $('e-back').addEventListener('click', () => editing ? openProject(editing) : show('home'));
+
+  function genCode() {
+    const L = 'ABCDEFGHJKLMNPQRSTUVWXYZ', D = '0123456789';
+    let c;
+    do {
+      c = '';
+      for (let i = 0; i < 3; i++) c += L[Math.floor(Math.random() * L.length)];
+      c += '-';
+      for (let i = 0; i < 3; i++) c += D[Math.floor(Math.random() * D.length)];
+    } while (projects[c]);
+    return c;
+  }
+
+  async function openEdit(code) {
+    editing = code;
+    const p = code ? (projects[code] || {}) : {};
+    $('e-title').textContent = code ? 'Editar proyecto' : 'Nuevo proyecto';
+    $('e-code').textContent = code ? 'Código: ' + code : 'El código se crea al guardar.';
+    $('e-project').value = p.project || '';
+    $('e-client').value = p.client || '';
+    $('e-stage').value = String(p.status || 0);
+    $('e-delivery').value = p.deliveryDate || '';
+    $('e-delay').value = p.delayReason || '';
+    $('e-phone').value = '';
+    $('e-err').textContent = '';
+    $('e-notify').classList.add('hidden');
+    show('edit');
+    if (code) {
+      try { $('e-phone').value = ((await db.ref('cachas-private/' + code + '/phone').get()).val()) || ''; }
+      catch (e) { /* sin permiso: se deja vacío */ }
+    }
+  }
+
+  $('e-save').addEventListener('click', async () => {
+    const project = $('e-project').value.trim(), client = $('e-client').value.trim();
+    if (!project || !client) { $('e-err').textContent = 'Escribe el proyecto y el cliente.'; return; }
+    const status = parseInt($('e-stage').value, 10);
+    const data = { project, client, status, deliveryDate: $('e-delivery').value, delayReason: $('e-delay').value.trim() };
+    const phone = $('e-phone').value.trim();
+    const code = editing || genCode();
+    const old = projects[code] || {};
+    const up = {};
+    if (!editing) {
+      up['cachas-projects/' + code] = { ...data, updatedAt: new Date().toISOString() };
+    } else {
+      Object.entries(data).forEach(([k, v]) => { if (old[k] !== v) up['cachas-projects/' + code + '/' + k] = v; });
+      if (old.status !== status) up['cachas-projects/' + code + '/updatedAt'] = new Date().toISOString();
+    }
+    up['cachas-private/' + code + '/phone'] = phone || null;
+    const btn = $('e-save');
+    btn.disabled = true; $('e-err').textContent = 'guardando…';
+    try {
+      await db.ref().update(up);
+      editing = code;
+      $('e-title').textContent = 'Editar proyecto';
+      $('e-code').textContent = 'Código: ' + code;
+      $('e-err').textContent = '✓ Guardado.';
+      const link = SITE_URL + '/seguimiento.html?code=' + code;
+      let fecha = '';
+      if (data.deliveryDate) fecha = new Date(data.deliveryDate + 'T12:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+      const name = client.split(' ')[0];
+      const msg = 'Hola ' + name + ' 👋\n\nActualización de tu proyecto *' + project + '*\n\n*Etapa actual:* ' + STAGES[status] +
+        (fecha ? '\n*Entrega estimada:* ' + fecha : '') + (data.delayReason ? '\n⚠️ *Actualización de plazo:* ' + data.delayReason : '') +
+        '\n\nSigue tu proyecto aquí (código ' + code + '):\n' + link + '\n\n_Cachas House - Carpintería arquitectónica_';
+      const a = $('e-notify');
+      a.href = 'https://wa.me/' + waDigits(phone) + '?text=' + encodeURIComponent(msg);
+      a.classList.remove('hidden');
+    } catch (err) {
+      $('e-err').textContent = 'No se pudo guardar (' + (err.code || err.message) + ').';
     } finally { btn.disabled = false; }
   });
 
