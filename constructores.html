@@ -19,6 +19,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="js/cachas-firebase.js"></script>
+  <script src="js/tool-puertas.js"></script>
 
   <style>
     :root {
@@ -246,6 +247,13 @@
       <div class="err" id="e-err"></div>
     </section>
 
+    <!-- HERRAMIENTA ACTIVA -->
+    <section id="v-tool" class="hidden">
+      <button class="top-btn" type="button" id="tool-back">← tools</button>
+      <h1 id="tool-name"></h1>
+      <div id="tool-body"></div>
+    </section>
+
     <!-- HERRAMIENTA EN CONSTRUCCIÓN -->
     <section id="v-soon" class="hidden">
       <button class="top-btn" type="button" id="soon-back">← tools</button>
@@ -293,7 +301,7 @@
   const PHOTO_TTL_DAYS = 30;
   const MAX_PHOTOS = 8;
   const $ = id => document.getElementById(id);
-  const views = ['login', 'home', 'project', 'new', 'sent', 'approved', 'edit', 'soon'];
+  const views = ['login', 'home', 'project', 'new', 'sent', 'approved', 'edit', 'soon', 'tool'];
 
   let me = null;              // { uid, username, name, role }
   let projects = {};          // código → proyecto
@@ -635,7 +643,7 @@
 
   /* ─── TOOLS: herramientas de diseño (por ahora en construcción) ─── */
   const TOOLS = [
-    { id: 'puertas',   icon: '🚪', name: 'Calculadora de puertas',   desc: 'Medidas de puertas según el hueco' },
+    { id: 'puertas',   icon: '🚪', name: 'Calculadora de puertas',   desc: 'Despiece según el baño + Excel' },
     { id: 'cortes',    icon: '🪚', name: 'Optimizador de cortes',    desc: 'Cuántas láminas y cómo cortarlas' },
     { id: 'despiece',  icon: '🧩', name: 'Despiece de módulos',      desc: 'Piezas de muebles bajos, altos y closets' },
     { id: 'cajones',   icon: '🗄️', name: 'Calculadora de cajones',   desc: 'Frentes, laterales y fondos' },
@@ -653,7 +661,15 @@
     toolsGrid.appendChild(b);
   });
   $('soon-back').addEventListener('click', () => show('home'));
+  $('tool-back').addEventListener('click', () => show('home'));
+  let doorsMounted = false;
   function openTool(t) {
+    if (t.id === 'puertas' && window.ToolPuertas) {
+      $('tool-name').textContent = t.icon + ' ' + t.name;
+      if (!doorsMounted) { ToolPuertas.mount($('tool-body')); doorsMounted = true; }   // conserva lo escrito al volver
+      show('tool');
+      return;
+    }
     $('soon-ico').textContent = t.icon;
     $('soon-name').textContent = t.name;
     show('soon');

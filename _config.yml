@@ -4,3 +4,4 @@ exclude:
   - CLAUDE.md
   - docs/
   - firebase/
+  - Costos.xlsx
