@@ -1,15 +1,113 @@
 {
   "rules": {
     "cachas-projects": {
-      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')",
+      ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && (root.child('users/' + auth.uid + '/role').val() === 'constructor' || root.child('users/' + auth.uid + '/role').val() === 'supervisor') && root.child('users/' + auth.uid + '/active').val() === true)",
       "$code": {
         ".read": true,
-        ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')"
+        ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))"
       }
     },
     "cachas-private": {
-      ".read": "auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')",
-      ".write": "auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')"
+      ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)",
+      ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))"
+    },
+    "users": {
+      ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))",
+      ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['username', 'name', 'role', 'active'])",
+        "role": {
+          ".validate": "newData.val() === 'constructor' || newData.val() === 'supervisor'"
+        },
+        "active": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "team-private": {
+      ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))",
+      ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))"
+    },
+    "config": {
+      ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && (root.child('users/' + auth.uid + '/role').val() === 'constructor' || root.child('users/' + auth.uid + '/role').val() === 'supervisor') && root.child('users/' + auth.uid + '/active').val() === true)",
+      ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com'))"
+    },
+    "updates": {
+      ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && (root.child('users/' + auth.uid + '/role').val() === 'constructor' || root.child('users/' + auth.uid + '/role').val() === 'supervisor') && root.child('users/' + auth.uid + '/active').val() === true)",
+      "$code": {
+        "$id": {
+          ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true) || ((auth != null && (root.child('users/' + auth.uid + '/role').val() === 'constructor' || root.child('users/' + auth.uid + '/role').val() === 'supervisor') && root.child('users/' + auth.uid + '/active').val() === true) && !data.exists() && root.child('cachas-projects/' + $code).exists())",
+          ".validate": "newData.hasChildren(['authorUid', 'text', 'status', 'createdAt'])",
+          "authorUid": {
+            ".validate": "newData.val() === auth.uid || data.val() === newData.val()"
+          },
+          "authorName": {
+            ".validate": "newData.isString() && newData.val().length <= 60"
+          },
+          "projectName": {
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          },
+          "text": {
+            ".validate": "newData.isString() && newData.val().length <= 2000"
+          },
+          "photoCount": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10"
+          },
+          "status": {
+            ".validate": "newData.val() === 'pending' || (((auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)) && (newData.val() === 'approved' || newData.val() === 'returned'))"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "reviewedBy": {
+            ".validate": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)"
+          },
+          "reviewerName": {
+            ".validate": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)"
+          },
+          "reviewedAt": {
+            ".validate": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)"
+          },
+          "reviewNote": {
+            ".validate": "((auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)) && newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "update-photos": {
+      ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && (root.child('users/' + auth.uid + '/role').val() === 'constructor' || root.child('users/' + auth.uid + '/role').val() === 'supervisor') && root.child('users/' + auth.uid + '/active').val() === true)",
+      ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)",
+      "$code": {
+        "$id": {
+          "$pid": {
+            ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true) || ((auth != null && (root.child('users/' + auth.uid + '/role').val() === 'constructor' || root.child('users/' + auth.uid + '/role').val() === 'supervisor') && root.child('users/' + auth.uid + '/active').val() === true) && !data.exists() && newData.parent().parent().parent().parent().child('updates/' + $code + '/' + $id + '/authorUid').val() === auth.uid)",
+            ".validate": "newData.isString() && newData.val().beginsWith('data:image/jpeg;base64,') && newData.val().length < 450000"
+          }
+        }
+      }
+    },
+    "timeline": {
+      ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)",
+      ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)",
+      "$code": {
+        ".read": true
+      }
+    },
+    "timeline-photos": {
+      ".read": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)",
+      ".write": "(auth != null && auth.token.email_verified === true && (auth.token.email === 'cachashouse@gmail.com' || auth.token.email === 'brahianrinconsanchez01@gmail.com')) || (auth != null && root.child('users/' + auth.uid + '/role').val() === 'supervisor' && root.child('users/' + auth.uid + '/active').val() === true)",
+      "$code": {
+        ".read": true,
+        "$id": {
+          "$pid": {
+            ".validate": "newData.isString() && newData.val().beginsWith('data:image/jpeg;base64,') && newData.val().length < 450000"
+          }
+        }
+      }
     }
   }
 }

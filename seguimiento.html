@@ -369,6 +369,26 @@
     .footer-logo img { height: 32px; opacity: .55; display: block; }
     .footer-copy { font-size: .65rem; color: rgba(235,231,223,.2); }
 
+    /* LÍNEA DE TIEMPO (avances aprobados) */
+    .tl { max-width: 680px; margin: 2rem auto 0; }
+    .tl.hidden { display: none; }
+    .tl-title { font-family: var(--round); font-weight: 800; color: var(--dark); font-size: 1.1rem; margin-bottom: 1rem; }
+    .tl-item { background: white; border: 1.5px solid var(--border); border-radius: 18px; padding: 1.25rem; margin-bottom: 1rem; }
+    .tl-date { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .tl-text { margin-top: .5rem; color: var(--dark); white-space: pre-wrap; font-size: .92rem; }
+    .tl-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: .9rem; }
+    .tl-photos:empty { display: none; }
+    .tl-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; cursor: zoom-in; }
+    .tl-note { font-size: .7rem; color: var(--faint); text-align: center; }
+    .tl-lb { position: fixed; inset: 0; background: rgba(0,0,0,.9); z-index: 999; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .tl-lb.on { display: flex; }
+    .tl-lb img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+
+    /* accesos internos (discretos) */
+    .team-links { display: flex; justify-content: center; gap: .6rem; margin-top: 3.5rem; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+    .team-links a { color: var(--faint); transition: color .2s; }
+    .team-links a:hover { color: var(--muted); }
+
     @media (max-width: 600px) {
       .trk-search { flex-direction: column; }
       .trk-btn-search { border-radius: 12px; }
@@ -421,7 +441,18 @@
         <div class="trk-delay-reason" id="trk-delay-reason" style="display:none"></div>
       </div>
     </div>
+    <div class="tl hidden" id="tl">
+      <h2 class="tl-title">avances de tu proyecto</h2>
+      <div id="tl-list"></div>
+      <p class="tl-note">Las fotos de cada avance se conservan 30 días.</p>
+    </div>
+
+    <div class="team-links">
+      <a href="constructores.html">acceso equipo</a>
+    </div>
   </main>
+
+  <div class="tl-lb" id="tl-lb"><img id="tl-lb-img" alt=""></div>
 
   <footer class="footer">
     <span class="footer-logo"><img src="images/LOGO-VERSION1(4).png" alt="cachas house"></span>
@@ -476,7 +507,7 @@
         trkError.classList.add('visible');
         return;
       }
-      renderCard(snap.val());
+      renderCard(Object.assign(snap.val(), { __code: code }));
     }).catch(() => {
       trkSearchBtn.textContent = 'Ver estado';
       trkSearchBtn.disabled = false;
@@ -540,6 +571,40 @@
       trkSteps.appendChild(step);
     });
     trkCard.classList.add('visible');
+    renderTimeline(p.__code);
+  }
+
+  /* ─── Avances aprobados (timeline) ─── */
+  const tlBox = document.getElementById('tl'), tlList = document.getElementById('tl-list');
+  const tlLb = document.getElementById('tl-lb');
+  tlLb.addEventListener('click', () => tlLb.classList.remove('on'));
+  async function renderTimeline(code) {
+    tlBox.classList.add('hidden'); tlList.innerHTML = '';
+    if (!code) return;
+    try {
+      const items = Object.entries((await db.ref('timeline/' + code).get()).val() || {})
+        .sort((a, b) => b[1].publishedAt - a[1].publishedAt);
+      if (!items.length) return;
+      const now = Date.now();
+      const needPhotos = items.some(([, t]) => t.photoCount && t.photosExpireAt > now);
+      const photos = needPhotos ? ((await db.ref('timeline-photos/' + code).get()).val() || {}) : {};
+      items.forEach(([id, t]) => {
+        const el = document.createElement('div');
+        el.className = 'tl-item';
+        el.innerHTML = '<div class="tl-date"></div><div class="tl-text"></div><div class="tl-photos"></div>';
+        el.querySelector('.tl-date').textContent = new Date(t.publishedAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+        el.querySelector('.tl-text').textContent = t.text || '';
+        const grid = el.querySelector('.tl-photos');
+        if (t.photosExpireAt > now) Object.values(photos[id] || {}).forEach(src => {
+          const img = document.createElement('img');
+          img.src = src; img.alt = 'avance'; img.loading = 'lazy';
+          img.addEventListener('click', () => { document.getElementById('tl-lb-img').src = src; tlLb.classList.add('on'); });
+          grid.appendChild(img);
+        });
+        tlList.appendChild(el);
+      });
+      tlBox.classList.remove('hidden');
+    } catch (e) { console.warn('timeline', e.code || e.message); }
   }
 })();
 </script>

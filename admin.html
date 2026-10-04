@@ -396,6 +396,41 @@
       color: var(--text); margin-bottom: 1rem; display: none;
     }
     .adm-note.visible { display: block; }
+    .adm-team-sec { margin-top: 3rem; }
+
+    /* ── CELULAR: las tablas se vuelven tarjetas ── */
+    @media (max-width: 720px) {
+      .page { padding: 1.5rem 1rem 3rem; }
+      .page-head { margin-bottom: 1.5rem; }
+      .trk-admin-panel { max-width: 100%; margin-top: 1rem; }
+      .trk-admin-top { flex-direction: column; align-items: stretch; }
+      .trk-admin-top > div:last-child { display: flex; flex-wrap: wrap; gap: .5rem; }
+      .trk-admin-top > div:last-child > button, .trk-admin-top > button { flex: 1 1 45%; min-height: 46px; }
+      .trk-table-wrap { background: none; border: none; overflow: visible; border-radius: 0; }
+      .trk-table, .trk-table.adm-users { min-width: 0; }
+      .trk-table thead { display: none; }
+      .trk-table, .trk-table tbody, .trk-table tr, .trk-table td { display: block; width: 100%; }
+      .trk-table tr {
+        background: white; border: 1.5px solid var(--border); border-radius: 16px;
+        padding: .6rem 1rem; margin-bottom: .9rem;
+      }
+      .trk-table tr:hover td { background: none; }
+      .trk-table td { border: none !important; padding: .4rem 0; display: flex; align-items: center; gap: .75rem; font-size: .9rem; }
+      .trk-table td::before {
+        content: attr(data-label); flex: 0 0 32%;
+        font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+      }
+      .trk-table td[data-label=""]::before, .trk-table td.trk-empty::before { display: none; }
+      .trk-table td > input, .trk-table td > select { flex: 1; min-width: 0; max-width: none; font-size: 16px; padding: .55rem .7rem; }
+      .trk-table td > button { flex: 1; min-height: 44px; font-size: .8rem; }
+      .trk-table td.trk-empty { display: block; }
+      .trk-modal { padding: 1.5rem; }
+      .trk-modal-field input { font-size: 16px; }
+      .footer { justify-content: center; text-align: center; }
+    }
+    .trk-table.adm-users { min-width: 760px; }
+    .adm-pin { cursor: pointer; }
+    .adm-off { color: var(--faint); }
   </style>
 </head>
 <body>
@@ -458,6 +493,24 @@
             <tbody id="trk-tbody"></tbody>
           </table>
         </div>
+
+        <div class="adm-team-sec">
+          <div class="trk-admin-top">
+            <div>
+              <span class="trk-admin-title">equipo</span><br>
+              <span class="adm-who">suben avances de cualquier proyecto · el ★ jefe los aprueba y recibe los avisos · solo los admin cambian el estado</span>
+            </div>
+            <button class="trk-btn-add" id="adm-add-user">+ constructor</button>
+          </div>
+          <div class="trk-table-wrap">
+            <table class="trk-table adm-users">
+              <thead>
+                <tr><th>nombre</th><th>usuario</th><th>PIN</th><th>rol</th><th>estado</th><th>acceso</th><th></th></tr>
+              </thead>
+              <tbody id="adm-users"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -488,6 +541,33 @@
     </div>
   </div>
 
+  <div class="trk-modal-overlay" id="adm-user-overlay">
+    <div class="trk-modal">
+      <h3>nuevo constructor</h3>
+      <div class="trk-modal-field">
+        <label>nombre</label>
+        <input type="text" id="user-name" placeholder="Ej. Tomás Sánchez" autocomplete="off">
+      </div>
+      <div class="trk-modal-field">
+        <label>usuario (para entrar al portal)</label>
+        <input type="text" id="user-username" placeholder="Ej. tomas" autocomplete="off" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="trk-modal-field">
+        <label>PIN (solo números, mínimo 6)</label>
+        <input type="text" id="user-password" inputmode="numeric" autocomplete="off" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="trk-modal-field">
+        <label>WhatsApp del constructor (opcional)</label>
+        <input type="tel" id="user-phone" placeholder="+57 300 000 0000">
+      </div>
+      <div class="trk-admin-err" id="user-err" style="text-align:left"></div>
+      <div class="trk-modal-actions">
+        <button class="trk-btn-logout" id="user-cancel">cancelar</button>
+        <button class="trk-btn-add" id="user-confirm">crear cuenta</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="footer">
     <span class="footer-logo"><img src="images/LOGO-VERSION1(4).png" alt="cachas house"></span>
     <span class="footer-copy">© 2025 cachas house. todos los derechos reservados.</span>
@@ -507,7 +587,7 @@
   const note       = $('adm-note');
   const migrateBtn = $('adm-migrate');
 
-  let projects = {}, priv = {}, listeners = [];
+  let projects = {}, priv = {}, users = {}, team = {}, listeners = [];
 
   /* ─── LOGIN (Google) ─── */
   $('adm-google').addEventListener('click', async () => {
@@ -551,11 +631,15 @@
       e => showNote('No se pudieron leer los proyectos (' + e.code + '). ¿Están publicadas las reglas nuevas?'));
     const h2 = r2.on('value', s => { priv = s.val() || {}; renderTable(); },
       () => showNote('Aún no se pueden leer los teléfonos privados: publica las reglas nuevas en Firebase.'));
-    listeners = [[r1, h1], [r2, h2]];
+    const r3 = db.ref('users'), r5 = db.ref('team-private');
+    const teamErr = () => showNote('Aún no se puede leer el equipo: publica las reglas nuevas en Firebase (fase 2).');
+    const h3 = r3.on('value', s => { users = s.val() || {}; renderTable(); }, teamErr);
+    const h5 = r5.on('value', s => { team = s.val() || {}; renderTable(); }, teamErr);
+    listeners = [[r1, h1], [r2, h2], [r3, h3], [r5, h5]];
   }
   function stopLive() {
     listeners.forEach(([r, h]) => r.off('value', h));
-    listeners = []; projects = {}; priv = {};
+    listeners = []; projects = {}; priv = {}; users = {}; team = {};
   }
   function showNote(msg) { note.textContent = msg; note.classList.add('visible'); }
 
@@ -574,7 +658,16 @@
     return c;
   }
 
+  /* en celular cada fila se muestra como tarjeta: cada celda lleva el nombre de su columna */
+  function labelize(tbody) {
+    const heads = [...tbody.closest('table').querySelectorAll('thead th')].map(th => th.textContent.trim());
+    tbody.querySelectorAll('tr').forEach(tr => [...tr.children].forEach((td, i) => {
+      if (!td.classList.contains('trk-empty')) td.dataset.label = heads[i] || '';
+    }));
+  }
+
   function renderTable() {
+    renderUsers();
     const keys = Object.keys(projects);
     migrateBtn.style.display = keys.some(k => projects[k] && projects[k].phone) ? '' : 'none';
     if (keys.length === 0) {
@@ -602,6 +695,7 @@
         <td><button class="trk-btn-del" data-code="${esc(code)}">eliminar</button></td>`;
       trkTbody.appendChild(tr);
     });
+    labelize(trkTbody);
 
     trkTbody.querySelectorAll('.trk-code-chip').forEach(chip => {
       chip.addEventListener('click', () => {
@@ -711,6 +805,180 @@
       });
     });
   }
+
+  /* ─── EQUIPO: constructores (usuario + PIN) ───
+     Plan Spark: el admin no puede cambiar contraseñas ajenas con el Admin SDK.
+     Por eso el PIN vigente se guarda en team-private/{uid} (solo admin) y para
+     resetearlo el panel entra como ese usuario en una 2ª instancia y lo cambia. */
+  const usersTbody = $('adm-users');
+  const constructors = () => Object.entries(users)
+    .filter(([, u]) => u && (u.role === 'constructor' || u.role === 'supervisor'))
+    .sort((a, b) => String(a[1].name).localeCompare(String(b[1].name)));
+  const PORTAL_URL = CH.SITE_URL + '/constructores.html';
+  const teamEmail = username => username + '@' + CH.TEAM_EMAIL_DOMAIN;
+  const newPin = () => String(Math.floor(100000 + Math.random() * 900000));   // 6 dígitos
+  const pinOk = pin => /^[0-9]{6,12}$/.test(pin);   // solo números, 6 a 12
+
+  async function secondaryAuth() {
+    const sec = firebase.apps.find(a => a.name === 'team-admin') || firebase.initializeApp(CH.firebaseConfig, 'team-admin');
+    const a = sec.auth();
+    await a.setPersistence(firebase.auth.Auth.Persistence.NONE);
+    return a;
+  }
+
+  function renderUsers() {
+    const list = constructors();
+    if (!list.length) {
+      usersTbody.innerHTML = '<tr><td colspan="7" class="trk-empty">Aún no hay constructores. Crea el primero con "+ constructor".</td></tr>';
+      return;
+    }
+    usersTbody.innerHTML = '';
+    list.forEach(([uid, u]) => {
+      const t = team[uid] || {};
+      const off = u.active === false;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td${off ? ' class="adm-off"' : ''}>${esc(u.name || '')}</td>
+        <td><span class="trk-code-chip" style="cursor:default">${esc(u.username || '')}</span></td>
+        <td><span class="trk-code-chip adm-pin" data-uid="${esc(uid)}" title="clic para ver">••••••</span></td>
+        <td><button class="trk-btn-logout adm-user-role" data-uid="${esc(uid)}" title="cambiar rol">${u.role === 'supervisor' ? '★ jefe' : 'constructor'}</button></td>
+        <td>${off ? '<span class="adm-off">inactivo</span>' : 'activo'}</td>
+        <td style="white-space:nowrap">
+          <button class="trk-btn-notify adm-user-wa" data-uid="${esc(uid)}" title="Enviar acceso por WhatsApp">WhatsApp</button>
+          <button class="trk-btn-logout adm-user-reset" data-uid="${esc(uid)}">nuevo PIN</button>
+        </td>
+        <td><button class="trk-btn-logout adm-user-toggle" data-uid="${esc(uid)}">${off ? 'activar' : 'desactivar'}</button></td>`;
+      if (!t.pin) tr.querySelector('.adm-pin').textContent = '—';
+      usersTbody.appendChild(tr);
+    });
+    labelize(usersTbody);
+  }
+
+  usersTbody.addEventListener('click', async e => {
+    const el = e.target.closest('[data-uid]');
+    if (!el) return;
+    const uid = el.dataset.uid, u = users[uid] || {}, t = team[uid] || {};
+
+    if (el.classList.contains('adm-pin')) {                       // ver / ocultar PIN
+      if (!t.pin) return;
+      el.textContent = el.textContent === t.pin ? '••••••' : t.pin;
+      return;
+    }
+    if (el.classList.contains('adm-user-role')) {                 // constructor ⇄ jefe
+      const toJefe = u.role !== 'supervisor';
+      if (!confirm(toJefe
+        ? '¿Hacer jefe a ' + (u.name || u.username) + '? Podrá aprobar o devolver avances, ver el teléfono de los clientes y recibirá los avisos por WhatsApp.'
+        : '¿Quitarle el rol de jefe a ' + (u.name || u.username) + '?')) return;
+      const up = { ['users/' + uid + '/role']: toJefe ? 'supervisor' : 'constructor' };
+      if (toJefe) {
+        let phone = t.phone || '';
+        if (!phone) {
+          phone = (prompt('WhatsApp de ' + (u.name || u.username) + ' para recibir los avisos de avances (con indicativo, ej. +57 300 000 0000):', '') || '').trim();
+          if (phone) up['team-private/' + uid + '/phone'] = phone;
+        }
+        up['config/reviewerName'] = String(u.name || u.username).split(' ')[0];
+        if (phone) up['config/reviewerPhone'] = phone;
+      }
+      db.ref().update(up).catch(err => alert('No se pudo cambiar el rol (' + err.code + ').'));
+      return;
+    }
+    if (el.classList.contains('adm-user-toggle')) {               // activar / desactivar
+      const activar = u.active === false;
+      if (!activar && !confirm('¿Desactivar a ' + (u.name || u.username) + '? Perderá el acceso al portal de inmediato.')) return;
+      db.ref('users/' + uid + '/active').set(activar).catch(err => alert('No se pudo cambiar el estado (' + err.code + ').'));
+      return;
+    }
+    if (el.classList.contains('adm-user-wa')) {                   // enviar acceso por WhatsApp
+      let phone = (t.phone || '').replace(/[^0-9]/g, '');
+      if (!phone) {
+        const p = prompt('WhatsApp de ' + (u.name || u.username) + ' (con indicativo, ej. +57 300 000 0000):', '');
+        if (!p) return;
+        phone = p.replace(/[^0-9]/g, '');
+        db.ref('team-private/' + uid + '/phone').set(p.trim());
+      }
+      const msg = 'Hola ' + (u.name || '').split(' ')[0] + ', este es tu acceso al portal de Cachas House:\n\n' +
+        PORTAL_URL + '\n\n*Usuario:* ' + u.username + '\n*PIN:* ' + (t.pin || '(pídelo al admin)') +
+        '\n\nTip: ábrelo en el celular y usa "Agregar a pantalla de inicio" para tenerlo como app.';
+      window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+      return;
+    }
+    if (el.classList.contains('adm-user-reset')) {                // nuevo PIN
+      if (!t.pin) { alert('No hay PIN guardado para esta cuenta; no se puede resetear desde el panel.'); return; }
+      const pin = prompt('Nuevo PIN para ' + (u.name || u.username) + ' (solo números, mínimo 6):', newPin());
+      if (pin === null) return;
+      if (!pinOk(pin.trim())) { alert('El PIN debe tener entre 6 y 12 números.'); return; }
+      el.disabled = true;
+      try {
+        const a = await secondaryAuth();
+        const cred = await a.signInWithEmailAndPassword(teamEmail(u.username), t.pin);
+        await cred.user.updatePassword(pin.trim());
+        await a.signOut();
+        await db.ref('team-private/' + uid + '/pin').set(pin.trim());
+        alert('PIN actualizado. Usa el botón WhatsApp para enviárselo.');
+      } catch (err) {
+        alert('No se pudo cambiar el PIN (' + (err.code || err.message) + ').');
+      } finally { el.disabled = false; }
+    }
+  });
+
+  /* crear cuenta: 2ª instancia de Firebase para no cerrar la sesión del admin */
+  const userOverlay = $('adm-user-overlay');
+  const userErr = $('user-err');
+  function openUserModal() {
+    ['user-name', 'user-username', 'user-phone'].forEach(id => { $(id).value = ''; });
+    $('user-password').value = newPin();
+    userErr.textContent = '';
+    userOverlay.classList.add('open');
+    setTimeout(() => $('user-name').focus(), 80);
+  }
+  function closeUserModal() { userOverlay.classList.remove('open'); }
+  $('adm-add-user').addEventListener('click', openUserModal);
+  $('user-cancel').addEventListener('click', closeUserModal);
+  userOverlay.addEventListener('click', e => { if (e.target === userOverlay) closeUserModal(); });
+  $('user-name').addEventListener('input', () => {                // sugiere usuario desde el nombre
+    const u = $('user-username');
+    if (u.dataset.touched) return;
+    u.value = $('user-name').value.trim().split(/\s+/)[0].toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9._-]/g, '');
+  });
+  $('user-username').addEventListener('input', e => { e.target.dataset.touched = '1'; });
+
+  async function createConstructor() {
+    const name = $('user-name').value.trim();
+    const username = $('user-username').value.trim().toLowerCase();
+    const pin = $('user-password').value.trim();
+    const phone = $('user-phone').value.trim();
+    userErr.textContent = '';
+    if (!name) { userErr.textContent = 'Escribe el nombre.'; return; }
+    if (!/^[a-z0-9._-]{3,20}$/.test(username)) { userErr.textContent = 'Usuario: 3 a 20 caracteres, solo minúsculas, números, punto o guion.'; return; }
+    if (!pinOk(pin)) { userErr.textContent = 'El PIN debe tener entre 6 y 12 números.'; return; }
+    const btn = $('user-confirm');
+    btn.disabled = true; btn.textContent = 'creando…';
+    try {
+      const a = await secondaryAuth();
+      const cred = await a.createUserWithEmailAndPassword(teamEmail(username), pin);
+      const uid = cred.user.uid;
+      await a.signOut();
+      await db.ref().update({
+        ['users/' + uid]: { username, name, role: 'constructor', active: true, createdAt: firebase.database.ServerValue.TIMESTAMP },
+        ['team-private/' + uid]: phone ? { pin, phone } : { pin },
+      });
+      closeUserModal();
+      $('user-username').dataset.touched = '';
+      alert('Cuenta creada para ' + name + '.\n\nUsuario: ' + username + '\nPIN: ' + pin + '\n\nUsa el botón WhatsApp de la tabla para enviarle el acceso.');
+    } catch (e) {
+      const msgs = {
+        'auth/email-already-in-use': 'Ese usuario ya existe. Elige otro.',
+        'auth/operation-not-allowed': 'Falta activar "Correo electrónico/contraseña" en Firebase → Authentication → Método de acceso.',
+        'auth/weak-password': 'El PIN es muy débil (mínimo 6 caracteres).',
+        'PERMISSION_DENIED': 'La cuenta se creó pero no se pudo guardar el perfil: revisa que las reglas estén publicadas.',
+      };
+      userErr.textContent = msgs[e.code] || ('No se pudo crear la cuenta (' + (e.code || e.message) + ').');
+    } finally {
+      btn.disabled = false; btn.textContent = 'crear cuenta';
+    }
+  }
+  $('user-confirm').addEventListener('click', createConstructor);
 
   /* ─── MIGRACIÓN: teléfonos → cachas-private (una sola vez) ─── */
   migrateBtn.addEventListener('click', async () => {

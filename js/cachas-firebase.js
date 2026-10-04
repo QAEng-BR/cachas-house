@@ -19,6 +19,8 @@
   const ADMIN_EMAILS = ['cachashouse@gmail.com', 'brahianrinconsanchez01@gmail.com'];
 
   window.CH = {
+    firebaseConfig,
+    TEAM_EMAIL_DOMAIN: 'constructores.cachashouse.com',   // usuario → usuario@constructores.cachashouse.com
     db: firebase.database(),
     auth: typeof firebase.auth === 'function' ? firebase.auth() : null,
     SITE_URL: 'https://cachashouse.com',
